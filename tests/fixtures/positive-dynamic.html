@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Positive: dynamically injected country select</title></head>
+  <body>
+    <h1>Dynamic country select (injected after 1.5s)</h1>
+    <p>Expected: MutationObserver picks it up and moves United States to the top.</p>
+    <div id="mount"></div>
+    <script>
+      setTimeout(() => {
+        const html = `
+          <label for="country">Country</label>
+          <select id="country" name="country" autocomplete="country-name">
+            <option value="">Select country</option>
+            <option value="AR">Argentina</option>
+            <option value="AU">Australia</option>
+            <option value="BR">Brazil</option>
+            <option value="CA">Canada</option>
+            <option value="CN">China</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+            <option value="GB">United Kingdom</option>
+            <option value="IN">India</option>
+            <option value="IT">Italy</option>
+            <option value="JP">Japan</option>
+            <option value="MX">Mexico</option>
+            <option value="NL">Netherlands</option>
+            <option value="NO">Norway</option>
+            <option value="PL">Poland</option>
+            <option value="ES">Spain</option>
+            <option value="SE">Sweden</option>
+            <option value="TR">Turkey</option>
+            <option value="US">United States</option>
+            <option value="UY">Uruguay</option>
+          </select>`;
+        document.getElementById("mount").innerHTML = html;
+      }, 1500);
+    </script>
+  </body>
+</html>

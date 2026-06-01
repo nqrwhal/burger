@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="options.css" />
+    <title>Burger Settings</title>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="logo">🍔</span>
+        <h1>Burger</h1>
+        <p class="tag">Reorder country and currency dropdowns. Never auto-selects.</p>
+      </header>
+
+      <section>
+        <h2>General</h2>
+        <label class="row">
+          <span>
+            <span class="label">Enabled globally</span>
+            <span class="hint">Master switch. When off, Burger does nothing.</span>
+          </span>
+          <input type="checkbox" id="global" class="check" />
+        </label>
+      </section>
+
+      <section>
+        <h2>What to reorder</h2>
+        <label class="row">
+          <span>
+            <span class="label">Country selectors</span>
+            <span class="hint">Move <em>United States</em> to the top of country dropdowns.</span>
+          </span>
+          <input type="checkbox" id="country" class="check" />
+        </label>
+        <label class="row">
+          <span>
+            <span class="label">Currency selectors</span>
+            <span class="hint">Move <em>USD</em> to the top of currency dropdowns.</span>
+          </span>
+          <input type="checkbox" id="currency" class="check" />
+        </label>
+      </section>
+
+      <section>
+        <h2>Disabled sites</h2>
+        <p class="hint">Sites you've turned off via the popup. Remove to re-enable.</p>
+        <ul id="disabled-list" class="hosts"></ul>
+        <p id="empty" class="empty hint">No sites disabled.</p>
+      </section>
+
+      <footer>
+        <span class="version">v0.2.0</span>
+        <span class="dot">·</span>
+        <span>Reorder-only. Never auto-selects.</span>
+      </footer>
+    </main>
+
+    <script src="options.js"></script>
+  </body>
+</html>

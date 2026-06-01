@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Burger — test fixtures</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+      h1 { font-size: 18px; }
+      ul { line-height: 1.8; }
+      .pos a { color: #047857; }
+      .neg a { color: #b91c1c; }
+    </style>
+  </head>
+  <body>
+    <h1>Burger — manual test fixtures</h1>
+    <p>Load the extension unpacked, then open each fixture and verify the expected outcome described in the page.</p>
+    <h2>Positive (should reorder)</h2>
+    <ul class="pos">
+      <li><a href="positive-basic.html">positive-basic.html</a> — country select, US to top</li>
+      <li><a href="positive-preserves-selection.html">positive-preserves-selection.html</a> — selection preserved</li>
+      <li><a href="positive-dynamic.html">positive-dynamic.html</a> — async-inserted country select</li>
+      <li><a href="positive-currency.html">positive-currency.html</a> — USD to top</li>
+    </ul>
+    <h2>Negative (should NOT reorder)</h2>
+    <ul class="neg">
+      <li><a href="negative-county.html">negative-county.html</a></li>
+      <li><a href="negative-cloud-region.html">negative-cloud-region.html</a></li>
+      <li><a href="negative-state.html">negative-state.html</a></li>
+      <li><a href="negative-sensitive-citizenship.html">negative-sensitive-citizenship.html</a></li>
+      <li><a href="negative-currency-no-usd.html">negative-currency-no-usd.html</a></li>
+    </ul>
+  </body>
+</html>

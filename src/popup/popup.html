@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>Burger</title>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="logo">🍔</span>
+        <h1>Burger</h1>
+      </div>
+      <p class="host" id="host">—</p>
+    </header>
+
+    <section class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="site-toggle" />
+        <span class="slider"></span>
+      </label>
+      <div class="toggle-text">
+        <div class="title" id="toggle-title">Enabled on this site</div>
+        <div class="subtitle" id="toggle-subtitle">United States and USD will be moved to top</div>
+      </div>
+    </section>
+
+    <section class="banner" id="banner" hidden></section>
+
+    <footer>
+      <button id="open-settings" class="link" type="button">Settings…</button>
+    </footer>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

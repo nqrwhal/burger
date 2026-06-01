@@ -1,0 +1,59 @@
+// Watches the DOM for new <select> elements and re-runs the scan. Throttled so
+// the extension never causes long tasks, and self-mutations are ignored via a
+// short suppression flag.
+
+const SCAN_INTERVAL_MS = 400;
+const SUPPRESS_MS = 50;
+
+function createManager(onScanRequested) {
+  let pending = false;
+  let lastScan = 0;
+  let suppressUntil = 0;
+
+  function requestScan(reason) {
+    if (pending) return;
+    pending = true;
+    const now = performance.now();
+    const wait = Math.max(0, SCAN_INTERVAL_MS - (now - lastScan));
+    setTimeout(() => {
+      pending = false;
+      lastScan = performance.now();
+      // Suppress observer reactions to our own DOM moves for a moment.
+      suppressUntil = performance.now() + SUPPRESS_MS;
+      try { onScanRequested(reason); } catch (e) { console.warn("[us-first] scan failed", e); }
+    }, wait);
+  }
+
+  const observer = new MutationObserver(mutations => {
+    if (performance.now() < suppressUntil) return;
+    // Cheap filter: only trigger if at least one mutation touched a subtree
+    // that might contain a <select>, or added/removed nodes.
+    for (const m of mutations) {
+      if (m.type === "childList" && (m.addedNodes.length || m.removedNodes.length)) {
+        requestScan("mutation-childlist");
+        return;
+      }
+    }
+  });
+
+  function start() {
+    observer.observe(document.documentElement, {
+      childList: true,
+      subtree: true
+    });
+    // Also scan on SPA history changes — many frameworks change route without
+    // triggering childList mutations on the root.
+    window.addEventListener("popstate", () => requestScan("popstate"));
+    // Initial scan.
+    requestScan("initial");
+  }
+
+  function stop() {
+    observer.disconnect();
+  }
+
+  return { start, stop, requestScan };
+}
+
+window.__usFirst = window.__usFirst || {};
+window.__usFirst.mutationManager = { createManager };

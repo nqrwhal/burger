@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Positive: preserves selection</title></head>
+  <body>
+    <h1>Country select with a pre-selected non-US value</h1>
+    <p>Expected: US moves to top, but "Canada" is still the selected value.</p>
+    <form>
+      <label for="country">Country</label>
+      <select id="country" name="country" autocomplete="country">
+        <option value="">Select country</option>
+        <option value="AU">Australia</option>
+        <option value="BR">Brazil</option>
+        <option value="CA" selected>Canada</option>
+        <option value="DE">Germany</option>
+        <option value="FR">France</option>
+        <option value="GB">United Kingdom</option>
+        <option value="IN">India</option>
+        <option value="IT">Italy</option>
+        <option value="JP">Japan</option>
+        <option value="MX">Mexico</option>
+        <option value="NL">Netherlands</option>
+        <option value="ES">Spain</option>
+        <option value="US">United States</option>
+      </select>
+      <output id="out"></output>
+    </form>
+    <script>
+      const sel = document.getElementById("country");
+      const out = document.getElementById("out");
+      const render = () => out.textContent = " selected = " + sel.value;
+      sel.addEventListener("change", render);
+      render();
+    </script>
+  </body>
+</html>

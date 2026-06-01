@@ -1,0 +1,18 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Negative: currency selector without USD</title></head>
+  <body>
+    <h1>Currency selector with no USD option — must NOT be modified</h1>
+    <p>Expected: scored as currency but skipped (no USD).</p>
+    <form>
+      <label for="currency">Currency</label>
+      <select id="currency" name="currency">
+        <option value="">Select currency</option>
+        <option value="EUR">EUR - Euro</option>
+        <option value="GBP">GBP - British Pound</option>
+        <option value="JPY">JPY - Japanese Yen</option>
+        <option value="CHF">CHF - Swiss Franc</option>
+      </select>
+    </form>
+  </body>
+</html>

@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Positive: currency selector (USD)</title></head>
+  <body>
+    <h1>Currency selector — USD should be moved to top</h1>
+    <p>Expected: USD jumps to just below the placeholder. Selected value preserved.</p>
+    <form>
+      <label for="currency">Currency</label>
+      <select id="currency" name="currency">
+        <option value="">Select currency</option>
+        <option value="EUR">EUR - Euro</option>
+        <option value="GBP">GBP - British Pound</option>
+        <option value="JPY">JPY - Japanese Yen</option>
+        <option value="CAD" selected>CAD - Canadian Dollar</option>
+        <option value="AUD">AUD - Australian Dollar</option>
+        <option value="CHF">CHF - Swiss Franc</option>
+        <option value="USD">USD - US Dollar</option>
+        <option value="SEK">SEK - Swedish Krona</option>
+      </select>
+    </form>
+  </body>
+</html>

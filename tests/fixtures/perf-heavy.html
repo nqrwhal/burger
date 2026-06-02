@@ -1,0 +1,112 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Perf: heavy page</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 1200px; margin: 1rem auto; padding: 0 1rem; }
+      .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+      select { width: 100%; }
+    </style>
+  </head>
+  <body>
+    <h1>Perf budget — heavy page</h1>
+    <p>40 selects (20 country, 10 currency, 10 noise) plus a 60-option ARIA listbox. Used by the perf test to measure scanOnce latency.</p>
+
+    <h2>Country selects</h2>
+    <div class="grid" id="country-grid"></div>
+
+    <h2>Currency selects</h2>
+    <div class="grid" id="currency-grid"></div>
+
+    <h2>Noise selects (state, region, county, language, timezone)</h2>
+    <div class="grid" id="noise-grid"></div>
+
+    <h2>ARIA listbox (60 options)</h2>
+    <input role="combobox" aria-controls="big-listbox" aria-expanded="true" aria-label="Country" readonly>
+    <ul id="big-listbox" role="listbox" aria-label="Country" style="list-style:none; max-height: 240px; overflow:auto; border:1px solid #ddd; padding:4px;"></ul>
+
+    <script>
+      const COUNTRIES = [
+        ["AR","Argentina"], ["AU","Australia"], ["BR","Brazil"], ["CA","Canada"],
+        ["CN","China"], ["DE","Germany"], ["FR","France"], ["GB","United Kingdom"],
+        ["IN","India"], ["IT","Italy"], ["JP","Japan"], ["MX","Mexico"],
+        ["NL","Netherlands"], ["NO","Norway"], ["ES","Spain"], ["SE","Sweden"],
+        ["TR","Turkey"], ["US","United States"], ["UY","Uruguay"], ["VN","Vietnam"]
+      ];
+      const CURRENCIES = [
+        ["EUR","EUR — Euro"], ["GBP","GBP — British Pound"], ["JPY","JPY — Japanese Yen"],
+        ["CAD","CAD — Canadian Dollar"], ["AUD","AUD — Australian Dollar"],
+        ["CHF","CHF — Swiss Franc"], ["USD","USD — US Dollar"], ["SEK","SEK — Swedish Krona"]
+      ];
+      const STATES = [
+        ["AL","Alabama"], ["AK","Alaska"], ["AZ","Arizona"], ["CA","California"],
+        ["FL","Florida"], ["NY","New York"], ["TX","Texas"], ["WA","Washington"]
+      ];
+      const REGIONS = [
+        ["us-east-1","us-east-1"], ["us-west-1","us-west-1"], ["eu-west-1","eu-west-1"],
+        ["ap-southeast-1","ap-southeast-1"]
+      ];
+      const COUNTIES = ["Orange County","Los Angeles County","San Diego County","Cook County"];
+      const LANGUAGES = [["en","English"],["fr","French"],["de","German"],["ja","Japanese"]];
+
+      function mkSelect(name, options, opts = {}) {
+        const sel = document.createElement("select");
+        sel.name = name;
+        if (opts.autocomplete) sel.setAttribute("autocomplete", opts.autocomplete);
+        const ph = new Option(opts.placeholder || "Select", "");
+        sel.add(ph);
+        for (const [v, l] of options) sel.add(new Option(l, v));
+        return sel;
+      }
+      function arrAsOpts(arr) { return arr.map(s => [s, s]); }
+
+      const cg = document.getElementById("country-grid");
+      for (let i = 0; i < 20; i++) {
+        const sel = mkSelect(`country-${i}`, COUNTRIES, { autocomplete: "country", placeholder: "Select country" });
+        sel.id = `country-${i}`;
+        cg.appendChild(sel);
+      }
+      const cur = document.getElementById("currency-grid");
+      for (let i = 0; i < 10; i++) {
+        const sel = mkSelect(`currency-${i}`, CURRENCIES, { placeholder: "Select currency" });
+        sel.id = `currency-${i}`;
+        cur.appendChild(sel);
+      }
+      const noise = document.getElementById("noise-grid");
+      const noiseSpecs = [
+        ...Array.from({length: 3}, (_, i) => ({ name: `state-${i}`,    opts: STATES,           ac: "address-level1", ph: "Select state" })),
+        ...Array.from({length: 3}, (_, i) => ({ name: `region-${i}`,   opts: REGIONS,          ph: "Select region" })),
+        ...Array.from({length: 2}, (_, i) => ({ name: `county-${i}`,   opts: arrAsOpts(COUNTIES), ph: "Select county" })),
+        ...Array.from({length: 2}, (_, i) => ({ name: `language-${i}`, opts: LANGUAGES,        ph: "Select language" }))
+      ];
+      for (const s of noiseSpecs) {
+        const sel = mkSelect(s.name, s.opts, { autocomplete: s.ac, placeholder: s.ph });
+        noise.appendChild(sel);
+      }
+
+      // Big listbox: 60 options, none aria-virtualized.
+      const bigList = document.getElementById("big-listbox");
+      const BIG_COUNTRIES = [
+        ...COUNTRIES,
+        ["AT","Austria"], ["BE","Belgium"], ["CL","Chile"], ["CO","Colombia"],
+        ["CZ","Czechia"], ["DK","Denmark"], ["EG","Egypt"], ["FI","Finland"],
+        ["GR","Greece"], ["HK","Hong Kong"], ["HU","Hungary"], ["ID","Indonesia"],
+        ["IE","Ireland"], ["IL","Israel"], ["KE","Kenya"], ["KR","South Korea"],
+        ["MY","Malaysia"], ["NG","Nigeria"], ["NZ","New Zealand"], ["PE","Peru"],
+        ["PH","Philippines"], ["PL","Poland"], ["PT","Portugal"], ["RO","Romania"],
+        ["RU","Russia"], ["SA","Saudi Arabia"], ["SG","Singapore"], ["SK","Slovakia"],
+        ["TH","Thailand"], ["TW","Taiwan"], ["UA","Ukraine"], ["VE","Venezuela"],
+        ["VN","Vietnam"], ["ZA","South Africa"], ["MA","Morocco"], ["BD","Bangladesh"],
+        ["PK","Pakistan"], ["LK","Sri Lanka"], ["NP","Nepal"], ["KH","Cambodia"]
+      ];
+      for (const [v, l] of BIG_COUNTRIES) {
+        const li = document.createElement("li");
+        li.setAttribute("role", "option");
+        li.setAttribute("data-value", v);
+        li.textContent = l;
+        bigList.appendChild(li);
+      }
+    </script>
+  </body>
+</html>

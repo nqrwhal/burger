@@ -117,6 +117,7 @@
   function scanOnce() {
     if (!enabled || sensitiveUrl) return;
     if (debugMode) console.log("[burger] scanOnce starting (enabled=" + enabled + ", debugMode=" + debugMode + ")");
+    const t0 = debugMode ? performance.now() : 0;
     scanNative();
     if (antdAdapter) {
       try { antdAdapter.synthesizeRoles(document); }
@@ -125,6 +126,9 @@
     scanAria();
     try { scanWrapped(); }
     catch (e) { console.warn("[burger] scanWrapped failed:", e); }
+    // Perf channel: only emitted when debugMode is on. The e2e perf test
+    // greps for this exact prefix to collect per-scan latency samples.
+    if (debugMode) console.log("[burger-perf] scan-ms=" + (performance.now() - t0).toFixed(3));
   }
 
   function restoreAll() {

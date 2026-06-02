@@ -19,7 +19,11 @@ import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
 
-const EXT_ROOT = path.resolve(__dirname, "..", "..");
+// Default to the live source tree. Override with BURGER_EXT_ROOT to test
+// a packaged/unzipped build — `npm run pack` produces dist/burger-*.zip;
+// extract that and point this at the extracted directory to verify the
+// shipped artifact is functionally identical.
+const EXT_ROOT = process.env.BURGER_EXT_ROOT || path.resolve(__dirname, "..", "..");
 
 type WorkerFixtures = {
   extContext: BrowserContext;

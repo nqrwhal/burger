@@ -1,0 +1,25 @@
+# GitHub Pages config. We use Pages only to host PRIVACY.md as a public URL
+# for the Chrome Web Store listing. Everything else in the repo is source
+# code that doesn't need to be served.
+#
+# Exclude lists tell Jekyll (the static-site generator Pages runs under the
+# hood) to skip these paths so they don't appear in the published site.
+
+title: Burger
+description: Moves United States and USD to the top of country and currency dropdowns.
+
+exclude:
+  - node_modules
+  - tests
+  - test-results
+  - playwright-report
+  - src
+  - icons
+  - package.json
+  - package-lock.json
+  - playwright.config.ts
+  - tsconfig.json
+  - manifest.json
+  - STORE_LISTING.md
+  - .gitignore
+  - .claude

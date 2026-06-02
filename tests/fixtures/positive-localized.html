@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: localized country labels</title>
+  </head>
+  <body>
+    <h1>Localized country selectors — must reorder</h1>
+    <p>Spanish form labels with noisy "Estados Unidos (USA)" entry. Used by the e2e suite to lock in the localization expansion.</p>
+
+    <form>
+      <label for="pais">País</label>
+      <select id="pais" name="pais" autocomplete="country">
+        <option value="">Seleccione un país</option>
+        <option value="AR">Argentina</option>
+        <option value="BR">Brasil</option>
+        <option value="CA">Canadá</option>
+        <option value="CN">China</option>
+        <option value="DE">Alemania</option>
+        <option value="ES">España</option>
+        <option value="FR">Francia</option>
+        <option value="GB">Reino Unido</option>
+        <option value="IN">India</option>
+        <option value="IT">Italia</option>
+        <option value="JP">Japón</option>
+        <option value="MX">México</option>
+        <option value="NL">Países Bajos</option>
+        <option value="US">Estados Unidos (USA)</option>
+        <option value="UY">Uruguay</option>
+      </select>
+    </form>
+
+    <h2>Russian — Соединённые Штаты</h2>
+    <form>
+      <label for="strana">Страна</label>
+      <select id="strana" name="country" autocomplete="country">
+        <option value="">Выберите страну</option>
+        <option value="AR">Аргентина</option>
+        <option value="BR">Бразилия</option>
+        <option value="CA">Канада</option>
+        <option value="CN">Китай</option>
+        <option value="DE">Германия</option>
+        <option value="FR">Франция</option>
+        <option value="GB">Великобритания</option>
+        <option value="IN">Индия</option>
+        <option value="IT">Италия</option>
+        <option value="JP">Япония</option>
+        <option value="MX">Мексика</option>
+        <option value="US">Соединённые Штаты</option>
+        <option value="UY">Уругвай</option>
+      </select>
+    </form>
+
+    <h2>Portuguese — Estados Unidos da América</h2>
+    <form>
+      <label for="pais-pt">País</label>
+      <select id="pais-pt" name="country" autocomplete="country">
+        <option value="">Selecione o país</option>
+        <option value="AR">Argentina</option>
+        <option value="BR">Brasil</option>
+        <option value="CA">Canadá</option>
+        <option value="DE">Alemanha</option>
+        <option value="FR">França</option>
+        <option value="GB">Reino Unido</option>
+        <option value="IN">Índia</option>
+        <option value="IT">Itália</option>
+        <option value="JP">Japão</option>
+        <option value="MX">México</option>
+        <option value="US">Estados Unidos da América</option>
+        <option value="UY">Uruguai</option>
+      </select>
+    </form>
+  </body>
+</html>

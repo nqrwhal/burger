@@ -76,5 +76,20 @@ function findWrappedSelects(root) {
   return out;
 }
 
+// Public lookup: given any element, walk up looking for a wrapper class. If
+// found, return { wrapper, backing, lib }. Used by aria-adapter to pull
+// "country"/"currency" labels out of the backing <select> when scoring an
+// open dropdown.
+function findEnclosingWrapper(el) {
+  if (!el || !el.closest) return null;
+  const wrapper = el.closest(WRAPPER_SELECTORS);
+  if (!wrapper) return null;
+  const lib = libraryFor(wrapper);
+  if (!lib) return null;
+  const backing = lib.findBackingSelect(wrapper);
+  if (!backing) return null;
+  return { wrapper, backing, lib };
+}
+
 window.__usFirst = window.__usFirst || {};
-window.__usFirst.wrappedSelect = { findWrappedSelects, LIBRARIES };
+window.__usFirst.wrappedSelect = { findWrappedSelects, findEnclosingWrapper, LIBRARIES };

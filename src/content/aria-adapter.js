@@ -16,13 +16,23 @@ const ARIA_ORDER_ATTR = "data-burger-original-aria-order";
 function normalizeOption(el) {
   const { normalize } = window.__usFirst.usAliases;
   const label = (el.textContent || "").trim();
-  // Pull a "value" from common attributes. Many libraries store it on data-value.
-  const value =
+  // Pull a "value" from common attributes. Many libraries store it on
+  // data-value. The element id is a last resort — but only if it *looks*
+  // like an actual code, not a DOM identifier like "rs-AR" or
+  // "react-select-2-option-15". Heuristic: trim a common library prefix
+  // before the last hyphen.
+  let value =
     el.getAttribute("data-value") ||
     el.getAttribute("data-option-value") ||
     el.getAttribute("data-key") ||
-    el.id ||
     "";
+  if (!value && el.id) {
+    // Take the last hyphen-segment of the id. "rs-AR" -> "AR";
+    // "react-select-2-option-15-US" -> "US". If it looks like a 2-3
+    // letter code, use it; otherwise discard.
+    const last = el.id.split("-").pop();
+    if (/^[A-Za-z]{2,3}$/.test(last)) value = last;
+  }
   return {
     element: el,
     label,
@@ -95,9 +105,17 @@ function isFilteringActive(combobox) {
 
 function buildBlob(listbox, combobox) {
   const { attrBlob } = window.__usFirst.detector;
-  const lb = attrBlob(listbox);
-  const cb = combobox ? attrBlob(combobox) : "";
-  return (lb + " " + cb).trim();
+  const parts = [attrBlob(listbox)];
+  if (combobox) parts.push(attrBlob(combobox));
+  // If the listbox lives inside a wrapped-select wrapper (Choices.js,
+  // Select2, Tom Select), include the backing <select>'s attrs — that's
+  // where the "country"/"currency" label usually lives.
+  const wrappedSelect = window.__usFirst.wrappedSelect;
+  if (wrappedSelect && wrappedSelect.findEnclosingWrapper) {
+    const found = wrappedSelect.findEnclosingWrapper(listbox);
+    if (found && found.backing) parts.push(attrBlob(found.backing));
+  }
+  return parts.filter(Boolean).join(" ").trim();
 }
 
 function getAutocomplete(combobox) {

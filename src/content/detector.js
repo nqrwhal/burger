@@ -35,12 +35,21 @@ function attrBlob(el) {
     el.name, el.id, el.className,
     el.getAttribute("autocomplete"),
     el.getAttribute("aria-label"),
-    el.getAttribute("aria-labelledby"),
     el.getAttribute("data-test"),
     el.getAttribute("data-testid"),
     el.getAttribute("placeholder"),
     el.getAttribute("title")
   ];
+  // aria-labelledby: dereference the IDs and pull the referenced text. The
+  // raw attribute value is meaningless (it's just IDs like "mui-label").
+  const labelledBy = el.getAttribute("aria-labelledby");
+  if (labelledBy) {
+    for (const id of labelledBy.split(/\s+/)) {
+      if (!id) continue;
+      const ref = el.ownerDocument.getElementById(id);
+      if (ref) parts.push(ref.textContent);
+    }
+  }
   if (el.id) {
     const lbl = el.ownerDocument.querySelector(`label[for="${CSS.escape(el.id)}"]`);
     if (lbl) parts.push(lbl.textContent);

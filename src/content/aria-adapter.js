@@ -39,11 +39,19 @@ function isVisible(el) {
   if (!el || !el.getBoundingClientRect) return false;
   if (el.hidden) return false;
   if (el.getAttribute("aria-hidden") === "true") return false;
-  const rect = el.getBoundingClientRect();
-  if (rect.width === 0 && rect.height === 0) return false;
-  // Cheap style check — avoids reading computedStyle on every element.
-  const style = el.style;
-  if (style && (style.display === "none" || style.visibility === "hidden")) return false;
+  // Inline style fast-path.
+  const inline = el.style;
+  if (inline && (inline.display === "none" || inline.visibility === "hidden")) return false;
+  // Computed-style check. We deliberately do NOT reject on rect.width/height
+  // being 0 — absolutely positioned listboxes (Headless UI, MUI portal,
+  // React Select) can briefly measure 0x0 before their popper script lays
+  // them out, even though they're logically "open". Computed display/
+  // visibility is a more reliable signal.
+  const view = el.ownerDocument && el.ownerDocument.defaultView;
+  if (view) {
+    const cs = view.getComputedStyle(el);
+    if (cs.display === "none" || cs.visibility === "hidden") return false;
+  }
   return true;
 }
 

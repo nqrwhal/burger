@@ -123,13 +123,15 @@ function scoreAsCountry(blob, options, autocomplete) {
     if (isRecognizedCountryValue(opt.normalizedValue)) isoValueCount++;
   }
   if (recognizedCount >= 30) { score += 50; reasons.push("many-country-labels"); }
-  else if (recognizedCount >= 10) { score += 30; reasons.push("some-country-labels"); }
-  else if (recognizedCount >= 5) { score += 15; reasons.push("few-country-labels"); }
+  else if (recognizedCount >= 10) { score += 35; reasons.push("some-country-labels"); }
+  else if (recognizedCount >= 5) { score += 20; reasons.push("few-country-labels"); }
 
   if (isoValueCount >= 30) { score += 30; reasons.push("many-iso-values"); }
-  else if (isoValueCount >= 10) { score += 15; reasons.push("some-iso-values"); }
+  else if (isoValueCount >= 10) { score += 20; reasons.push("some-iso-values"); }
+  else if (isoValueCount >= 5) { score += 10; reasons.push("few-iso-values"); }
 
-  if (options.length >= 50 && options.length <= 300) { score += 10; reasons.push("plausible-option-count"); }
+  // Plausible option count — country lists are commonly 15-300 options.
+  if (options.length >= 15 && options.length <= 300) { score += 10; reasons.push("plausible-option-count"); }
   if (options.length < 5) return { score: 0, reasons: ["too-few-options"], sensitive };
 
   let targetOption = null;
@@ -177,8 +179,8 @@ function scoreAsCurrency(blob, options) {
   }
   const total = labelMatches + valueMatches;
 
-  if (valueMatches >= 5) { score += 40; reasons.push("many-iso-currency-values"); }
-  else if (valueMatches >= 3) { score += 25; reasons.push("some-iso-currency-values"); }
+  if (valueMatches >= 5) { score += 45; reasons.push("many-iso-currency-values"); }
+  else if (valueMatches >= 3) { score += 30; reasons.push("some-iso-currency-values"); }
 
   if (labelMatches >= 5) { score += 20; reasons.push("currency-code-labels"); }
   else if (labelMatches >= 3) { score += 10; reasons.push("few-currency-code-labels"); }

@@ -2,7 +2,10 @@
 // the extension never causes long tasks, and self-mutations are ignored via a
 // short suppression flag.
 
-const SCAN_INTERVAL_MS = 400;
+// Throttle keeps us off the main thread under heavy churn, but for ARIA
+// menus the perceived lag matters — a 400 ms delay between click-to-open and
+// reorder is visible. 120 ms feels instant while still coalescing bursts.
+const SCAN_INTERVAL_MS = 120;
 const SUPPRESS_MS = 50;
 
 function createManager(onScanRequested) {

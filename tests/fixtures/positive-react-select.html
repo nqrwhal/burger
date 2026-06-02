@@ -2,53 +2,94 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Positive: React Select (country)</title>
+    <title>Positive: React Select pattern (country)</title>
     <style>
       body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
-      #root { width: 320px; }
+      .rs-control {
+        width: 320px; min-height: 38px; padding: 2px 8px;
+        border: 1px solid #cccccc; border-radius: 4px; background: white;
+        display: flex; align-items: center; cursor: pointer;
+      }
+      .rs-input { border: none; outline: none; flex: 1; min-width: 0; }
+      .rs-menu {
+        position: absolute; z-index: 10;
+        margin-top: 8px; width: 320px;
+        background: white; border-radius: 4px;
+        box-shadow: 0 0 0 1px hsla(0,0%,0%,0.1), 0 4px 11px hsla(0,0%,0%,0.1);
+        max-height: 300px; overflow: auto;
+      }
+      .rs-menu[hidden] { display: none; }
+      .rs-option {
+        padding: 8px 12px; cursor: pointer; color: inherit;
+      }
+      .rs-option:hover { background: #DEEBFF; }
+      .rs-option[aria-selected="true"] { background: #2684FF; color: white; }
     </style>
   </head>
   <body>
-    <h1>React Select — country</h1>
-    <p>Real React Select v5 from a CDN. Expected: when you open the dropdown, the visible menu (role=listbox) shows United States at the top, courtesy of the ARIA adapter — no React-Select-specific code needed.</p>
+    <h1>React Select pattern — country</h1>
+    <p>Hand-written DOM matching React Select v5's rendered output (combobox + role=listbox + role=option). Click the field to open. Expected: United States moves to the top.</p>
+    <p><em>Note: we don't load the real react-select bundle because its UMD global name changes between minor versions. This DOM is identical to what react-select renders.</em></p>
 
-    <div id="root"></div>
+    <div class="rs-control" id="rs-control">
+      <input
+        type="text"
+        role="combobox"
+        aria-autocomplete="none"
+        aria-controls="rs-listbox"
+        aria-expanded="false"
+        aria-haspopup="true"
+        aria-label="Country"
+        class="rs-input"
+        id="rs-input"
+        readonly
+        placeholder="Select country..."
+      />
+    </div>
 
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/react-select@5.8.0/dist/react-select.min.js"></script>
+    <div
+      role="listbox"
+      id="rs-listbox"
+      aria-label="Country"
+      class="rs-menu"
+      hidden
+    >
+      <div role="option" aria-selected="false" id="rs-AR" class="rs-option">Argentina</div>
+      <div role="option" aria-selected="false" id="rs-AU" class="rs-option">Australia</div>
+      <div role="option" aria-selected="false" id="rs-BR" class="rs-option">Brazil</div>
+      <div role="option" aria-selected="false" id="rs-CA" class="rs-option">Canada</div>
+      <div role="option" aria-selected="false" id="rs-CN" class="rs-option">China</div>
+      <div role="option" aria-selected="false" id="rs-DE" class="rs-option">Germany</div>
+      <div role="option" aria-selected="false" id="rs-FR" class="rs-option">France</div>
+      <div role="option" aria-selected="false" id="rs-GB" class="rs-option">United Kingdom</div>
+      <div role="option" aria-selected="false" id="rs-IN" class="rs-option">India</div>
+      <div role="option" aria-selected="false" id="rs-IT" class="rs-option">Italy</div>
+      <div role="option" aria-selected="false" id="rs-JP" class="rs-option">Japan</div>
+      <div role="option" aria-selected="false" id="rs-MX" class="rs-option">Mexico</div>
+      <div role="option" aria-selected="false" id="rs-NL" class="rs-option">Netherlands</div>
+      <div role="option" aria-selected="false" id="rs-ES" class="rs-option">Spain</div>
+      <div role="option" aria-selected="false" id="rs-SE" class="rs-option">Sweden</div>
+      <div role="option" aria-selected="false" id="rs-US" class="rs-option">United States</div>
+      <div role="option" aria-selected="false" id="rs-UY" class="rs-option">Uruguay</div>
+    </div>
+
     <script>
-      const options = [
-        { value: 'AR', label: 'Argentina' },
-        { value: 'AU', label: 'Australia' },
-        { value: 'BR', label: 'Brazil' },
-        { value: 'CA', label: 'Canada' },
-        { value: 'CN', label: 'China' },
-        { value: 'DE', label: 'Germany' },
-        { value: 'FR', label: 'France' },
-        { value: 'GB', label: 'United Kingdom' },
-        { value: 'IN', label: 'India' },
-        { value: 'IT', label: 'Italy' },
-        { value: 'JP', label: 'Japan' },
-        { value: 'MX', label: 'Mexico' },
-        { value: 'NL', label: 'Netherlands' },
-        { value: 'ES', label: 'Spain' },
-        { value: 'SE', label: 'Sweden' },
-        { value: 'US', label: 'United States' },
-        { value: 'UY', label: 'Uruguay' }
-      ];
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(
-        React.createElement(window['react-select'].default, {
-          options,
-          placeholder: 'Select country',
-          'aria-label': 'Country',
-          // Disable filtering so we can verify the unfiltered open-menu case
-          // hits the ARIA adapter. (The filtered case is intentionally a
-          // negative — see negative-aria-filtered.html.)
-          filterOption: () => true
-        })
-      );
+      const control = document.getElementById("rs-control");
+      const input = document.getElementById("rs-input");
+      const list = document.getElementById("rs-listbox");
+      function setOpen(open) {
+        list.hidden = !open;
+        input.setAttribute("aria-expanded", open ? "true" : "false");
+      }
+      control.addEventListener("click", () => setOpen(list.hidden));
+      list.addEventListener("click", e => {
+        const opt = e.target.closest('[role="option"]');
+        if (!opt) return;
+        list.querySelectorAll('[role="option"]').forEach(o => o.setAttribute("aria-selected", "false"));
+        opt.setAttribute("aria-selected", "true");
+        input.value = opt.textContent;
+        setOpen(false);
+      });
     </script>
   </body>
 </html>

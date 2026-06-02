@@ -1,0 +1,7 @@
+# GitHub Pages config. Pages is configured (in repo settings) to publish
+# from the docs/ directory on main, so only files in this directory are
+# served — manifest.json, src/, icons/, tests/, etc. live above this point
+# and are invisible to the published site.
+
+title: Burger
+description: Moves United States and USD to the top of country and currency dropdowns.

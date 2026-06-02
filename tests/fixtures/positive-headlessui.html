@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: Headless UI Listbox pattern (currency)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .hl-button {
+        width: 280px; padding: 8px 12px;
+        border: 1px solid #d4d4d8; border-radius: 6px; background: white;
+        font-size: 14px; cursor: pointer; text-align: left;
+      }
+      .hl-options {
+        position: absolute; z-index: 50;
+        background: white; border: 1px solid #d4d4d8; border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-top: 4px; padding: 4px; width: 280px;
+        list-style: none;
+      }
+      .hl-options[hidden] { display: none; }
+      .hl-option {
+        padding: 6px 8px; border-radius: 4px; cursor: pointer;
+      }
+      .hl-option[aria-selected="true"] { background: #f59e0b; color: white; }
+      .hl-option:hover { background: #f3f4f6; }
+    </style>
+  </head>
+  <body>
+    <h1>Headless UI Listbox pattern — currency</h1>
+    <p>Click the button to open. Expected: USD moves to the top. Markup matches Headless UI's <code>&lt;Listbox&gt;</code> rendered output.</p>
+
+    <button
+      type="button"
+      id="headlessui-listbox-button-1"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+      aria-labelledby="headlessui-listbox-label-1 headlessui-listbox-button-1"
+      data-headlessui-state=""
+      class="hl-button"
+    >
+      <span id="headlessui-listbox-label-1" hidden>Currency</span>
+      <span id="hl-display">Select currency…</span>
+    </button>
+
+    <ul
+      id="headlessui-listbox-options-1"
+      role="listbox"
+      tabindex="0"
+      aria-labelledby="headlessui-listbox-label-1"
+      aria-orientation="vertical"
+      class="hl-options"
+      hidden
+      data-headlessui-state=""
+    >
+      <li role="option" aria-selected="false" id="hl-eur" data-headlessui-state="">EUR — Euro</li>
+      <li role="option" aria-selected="false" id="hl-gbp" data-headlessui-state="">GBP — British Pound</li>
+      <li role="option" aria-selected="false" id="hl-jpy" data-headlessui-state="">JPY — Japanese Yen</li>
+      <li role="option" aria-selected="false" id="hl-cad" data-headlessui-state="">CAD — Canadian Dollar</li>
+      <li role="option" aria-selected="false" id="hl-aud" data-headlessui-state="">AUD — Australian Dollar</li>
+      <li role="option" aria-selected="false" id="hl-chf" data-headlessui-state="">CHF — Swiss Franc</li>
+      <li role="option" aria-selected="false" id="hl-usd" data-headlessui-state="">USD — US Dollar</li>
+      <li role="option" aria-selected="false" id="hl-sek" data-headlessui-state="">SEK — Swedish Krona</li>
+    </ul>
+
+    <script>
+      const btn = document.getElementById("headlessui-listbox-button-1");
+      const list = document.getElementById("headlessui-listbox-options-1");
+      const display = document.getElementById("hl-display");
+      btn.addEventListener("click", () => {
+        const open = btn.getAttribute("aria-expanded") === "true";
+        btn.setAttribute("aria-expanded", open ? "false" : "true");
+        list.hidden = open;
+      });
+      list.addEventListener("click", e => {
+        const opt = e.target.closest('[role="option"]');
+        if (!opt) return;
+        for (const o of list.querySelectorAll('[role="option"]')) o.setAttribute("aria-selected", "false");
+        opt.setAttribute("aria-selected", "true");
+        display.textContent = opt.textContent;
+        btn.setAttribute("aria-expanded", "false");
+        list.hidden = true;
+      });
+    </script>
+  </body>
+</html>

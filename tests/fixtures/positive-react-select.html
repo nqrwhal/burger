@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: React Select (country)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      #root { width: 320px; }
+    </style>
+  </head>
+  <body>
+    <h1>React Select — country</h1>
+    <p>Real React Select v5 from a CDN. Expected: when you open the dropdown, the visible menu (role=listbox) shows United States at the top, courtesy of the ARIA adapter — no React-Select-specific code needed.</p>
+
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react-select@5.8.0/dist/react-select.min.js"></script>
+    <script>
+      const options = [
+        { value: 'AR', label: 'Argentina' },
+        { value: 'AU', label: 'Australia' },
+        { value: 'BR', label: 'Brazil' },
+        { value: 'CA', label: 'Canada' },
+        { value: 'CN', label: 'China' },
+        { value: 'DE', label: 'Germany' },
+        { value: 'FR', label: 'France' },
+        { value: 'GB', label: 'United Kingdom' },
+        { value: 'IN', label: 'India' },
+        { value: 'IT', label: 'Italy' },
+        { value: 'JP', label: 'Japan' },
+        { value: 'MX', label: 'Mexico' },
+        { value: 'NL', label: 'Netherlands' },
+        { value: 'ES', label: 'Spain' },
+        { value: 'SE', label: 'Sweden' },
+        { value: 'US', label: 'United States' },
+        { value: 'UY', label: 'Uruguay' }
+      ];
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(
+        React.createElement(window['react-select'].default, {
+          options,
+          placeholder: 'Select country',
+          'aria-label': 'Country',
+          // Disable filtering so we can verify the unfiltered open-menu case
+          // hits the ARIA adapter. (The filtered case is intentionally a
+          // negative — see negative-aria-filtered.html.)
+          filterOption: () => true
+        })
+      );
+    </script>
+  </body>
+</html>

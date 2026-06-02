@@ -1,0 +1,101 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: Radix UI Select pattern (country)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      [data-radix-select-trigger] {
+        display: inline-flex; align-items: center; justify-content: space-between;
+        width: 280px; padding: 8px 12px;
+        border: 1px solid #d4d4d8; border-radius: 6px; background: white;
+        font-size: 14px; cursor: pointer;
+      }
+      [data-radix-select-content] {
+        position: absolute; z-index: 50;
+        background: white; border: 1px solid #d4d4d8; border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        margin-top: 4px; padding: 4px; width: 280px;
+        max-height: 280px; overflow: auto;
+      }
+      [data-radix-select-content][data-state="closed"] { display: none; }
+      [data-radix-select-item] {
+        display: flex; align-items: center;
+        padding: 6px 8px; border-radius: 4px;
+        cursor: pointer; user-select: none;
+      }
+      [data-radix-select-item]:hover { background: #f3f4f6; }
+      [data-radix-select-item][data-highlighted] { background: #fef3c7; outline: none; }
+      [data-radix-select-item][data-state="checked"] { font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>Radix UI Select pattern — country</h1>
+    <p>Click the trigger to open. Expected: <em>United States</em> moves to the top of the listbox once it opens. This is hand-written DOM that matches Radix's actual rendered output, so the generic ARIA adapter should handle it with no Radix-specific code.</p>
+
+    <button
+      type="button"
+      role="combobox"
+      aria-controls="radix-listbox"
+      aria-expanded="false"
+      aria-autocomplete="none"
+      aria-haspopup="listbox"
+      aria-label="Country"
+      data-radix-select-trigger
+      data-state="closed"
+      id="radix-trigger"
+    >
+      <span data-radix-select-value>Select country…</span>
+      <span aria-hidden="true">▾</span>
+    </button>
+
+    <div
+      role="listbox"
+      id="radix-listbox"
+      data-radix-select-content
+      data-state="closed"
+      aria-label="Country"
+    >
+      <div data-radix-select-item role="option" data-value="AR">Argentina</div>
+      <div data-radix-select-item role="option" data-value="AU">Australia</div>
+      <div data-radix-select-item role="option" data-value="BR">Brazil</div>
+      <div data-radix-select-item role="option" data-value="CA">Canada</div>
+      <div data-radix-select-item role="option" data-value="CN">China</div>
+      <div data-radix-select-item role="option" data-value="DE">Germany</div>
+      <div data-radix-select-item role="option" data-value="FR">France</div>
+      <div data-radix-select-item role="option" data-value="GB">United Kingdom</div>
+      <div data-radix-select-item role="option" data-value="IN">India</div>
+      <div data-radix-select-item role="option" data-value="IT">Italy</div>
+      <div data-radix-select-item role="option" data-value="JP">Japan</div>
+      <div data-radix-select-item role="option" data-value="MX">Mexico</div>
+      <div data-radix-select-item role="option" data-value="NL">Netherlands</div>
+      <div data-radix-select-item role="option" data-value="ES">Spain</div>
+      <div data-radix-select-item role="option" data-value="SE">Sweden</div>
+      <div data-radix-select-item role="option" data-value="TR">Turkey</div>
+      <div data-radix-select-item role="option" data-value="US">United States</div>
+      <div data-radix-select-item role="option" data-value="UY">Uruguay</div>
+    </div>
+
+    <script>
+      const trigger = document.getElementById("radix-trigger");
+      const listbox = document.getElementById("radix-listbox");
+      const value = trigger.querySelector("[data-radix-select-value]");
+      function setOpen(open) {
+        trigger.setAttribute("aria-expanded", open ? "true" : "false");
+        trigger.setAttribute("data-state", open ? "open" : "closed");
+        listbox.setAttribute("data-state", open ? "open" : "closed");
+      }
+      trigger.addEventListener("click", () => {
+        setOpen(trigger.getAttribute("aria-expanded") !== "true");
+      });
+      listbox.addEventListener("click", e => {
+        const item = e.target.closest("[data-radix-select-item]");
+        if (!item) return;
+        listbox.querySelectorAll("[data-radix-select-item]").forEach(el => el.removeAttribute("data-state"));
+        item.setAttribute("data-state", "checked");
+        value.textContent = item.textContent;
+        setOpen(false);
+      });
+    </script>
+  </body>
+</html>

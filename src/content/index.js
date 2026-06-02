@@ -2,7 +2,7 @@
 // manager, and debug overlay together, and reacts to settings changes live.
 
 (function () {
-  const { detector, nativeSelect, ariaAdapter, mutationManager, settings, domWalk, debugOverlay } = window.__usFirst;
+  const { detector, nativeSelect, ariaAdapter, wrappedSelect, antdAdapter, mutationManager, settings, domWalk, debugOverlay } = window.__usFirst;
 
   if (location.protocol === "chrome-extension:" || location.protocol === "about:") return;
 
@@ -72,10 +72,30 @@
     }
   }
 
+  // Annotate wrappers (Select2, Choices.js, Tom Select) in debug overlay so
+  // we can confirm recognition. The native adapter already reordered the
+  // backing <select>; the ARIA adapter handles the visible dropdown menus
+  // these libraries render with role=listbox.
+  const annotatedWrappers = new WeakSet();
+  function scanWrapped() {
+    if (!wrappedSelect || !debugMode) return;
+    for (const { wrapper, backing, lib } of wrappedSelect.findWrappedSelects(document)) {
+      if (annotatedWrappers.has(wrapper)) continue;
+      annotatedWrappers.add(wrapper);
+      // Use the native scoring of the backing select to label the wrapper.
+      const result = detector.scoreSelector(backing);
+      debugOverlay.annotate(wrapper, { kind: result.kind, score: result.score, reasons: [`wrapper:${lib.id}`, ...result.reasons] });
+    }
+  }
+
   function scanOnce() {
     if (!enabled || sensitiveUrl) return;
     scanNative();
+    // Synthesize ARIA roles on Ant Design dropdowns so the generic ARIA
+    // adapter can handle them in the next step.
+    if (antdAdapter) antdAdapter.synthesizeRoles(document);
     scanAria();
+    scanWrapped();
   }
 
   function restoreAll() {

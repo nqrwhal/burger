@@ -2,7 +2,7 @@
 
 MV3 Chrome extension that moves **United States** to the top of country dropdowns and **USD** to the top of currency dropdowns. Reorder-only — it never auto-selects.
 
-Supports native `<select>`, ARIA listbox/combobox patterns (Radix, Headless UI, MUI Listbox, hand-rolled, etc.), and elements inside open shadow DOM.
+Supports native `<select>`, ARIA listbox/combobox patterns (Radix, Headless UI, MUI Select, React Select, hand-rolled, etc.), libraries that wrap a native select (Select2, Choices.js, Tom Select), Ant Design (via synthetic ARIA roles), and elements inside open shadow DOM.
 
 ## Install (unpacked)
 
@@ -56,6 +56,8 @@ src/
     detector.js          country + currency scoring (shared by native + ARIA)
     native-select-adapter.js  reorder + rollback for <select>
     aria-adapter.js      reorder + rollback for [role=listbox]
+    wrapped-select-adapter.js  recognizes Select2 / Choices.js / Tom Select wrappers
+    antd-adapter.js      synthesizes role=option on Ant Design dropdowns
     debug-overlay.js     dev-mode visual diagnostics
     mutation-manager.js  throttled MutationObserver (childList + aria-expanded)
     index.js             wires everything; reacts to storage changes live

@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: MUI Select pattern (country)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .MuiSelect-select {
+        display: inline-flex; align-items: center; min-width: 260px;
+        padding: 8px 32px 8px 12px;
+        border: 1px solid #d4d4d8; border-radius: 4px; background: white;
+        font-size: 14px; cursor: pointer;
+      }
+      .MuiPopover-root { position: absolute; z-index: 1300; }
+      .MuiMenu-paper {
+        background: white; border-radius: 4px; padding: 8px 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        max-height: 320px; overflow: auto; width: 260px;
+      }
+      .MuiList-root { list-style: none; margin: 0; padding: 0; }
+      .MuiMenuItem-root {
+        padding: 6px 16px; cursor: pointer;
+      }
+      .MuiMenuItem-root:hover { background: #f3f4f6; }
+      .MuiMenuItem-root.Mui-selected { background: #e0e7ff; }
+    </style>
+  </head>
+  <body>
+    <h1>MUI Select pattern — country (portal-rendered listbox)</h1>
+    <p>Click the trigger. Expected: <em>United States</em> moves to the top of the listbox once the portal is rendered. Markup mirrors MUI's actual rendered output.</p>
+
+    <div
+      role="button"
+      aria-haspopup="listbox"
+      aria-expanded="false"
+      aria-controls="mui-listbox"
+      aria-labelledby="mui-label"
+      tabindex="0"
+      class="MuiSelect-select"
+      id="mui-trigger"
+    >
+      <span id="mui-label" hidden>Country</span>
+      <span id="mui-display">Select country…</span>
+    </div>
+
+    <!-- MUI mounts this in a portal at document body, not inline -->
+    <div class="MuiPopover-root" id="mui-popover" hidden>
+      <div class="MuiMenu-paper">
+        <ul
+          id="mui-listbox"
+          role="listbox"
+          tabindex="0"
+          aria-labelledby="mui-label"
+          class="MuiList-root MuiMenu-list"
+        >
+          <li role="option" class="MuiMenuItem-root" data-value="AR">Argentina</li>
+          <li role="option" class="MuiMenuItem-root" data-value="AU">Australia</li>
+          <li role="option" class="MuiMenuItem-root" data-value="BR">Brazil</li>
+          <li role="option" class="MuiMenuItem-root" data-value="CA">Canada</li>
+          <li role="option" class="MuiMenuItem-root" data-value="CN">China</li>
+          <li role="option" class="MuiMenuItem-root" data-value="DE">Germany</li>
+          <li role="option" class="MuiMenuItem-root" data-value="FR">France</li>
+          <li role="option" class="MuiMenuItem-root" data-value="GB">United Kingdom</li>
+          <li role="option" class="MuiMenuItem-root" data-value="IN">India</li>
+          <li role="option" class="MuiMenuItem-root" data-value="IT">Italy</li>
+          <li role="option" class="MuiMenuItem-root" data-value="JP">Japan</li>
+          <li role="option" class="MuiMenuItem-root" data-value="MX">Mexico</li>
+          <li role="option" class="MuiMenuItem-root" data-value="NL">Netherlands</li>
+          <li role="option" class="MuiMenuItem-root" data-value="ES">Spain</li>
+          <li role="option" class="MuiMenuItem-root" data-value="SE">Sweden</li>
+          <li role="option" class="MuiMenuItem-root" data-value="TR">Turkey</li>
+          <li role="option" class="MuiMenuItem-root" data-value="US">United States</li>
+          <li role="option" class="MuiMenuItem-root" data-value="UY">Uruguay</li>
+        </ul>
+      </div>
+    </div>
+
+    <script>
+      const trigger = document.getElementById("mui-trigger");
+      const popover = document.getElementById("mui-popover");
+      const listbox = document.getElementById("mui-listbox");
+      const display = document.getElementById("mui-display");
+
+      // MUI portals to body. Simulate by appending on first open.
+      let mounted = false;
+      function open() {
+        if (!mounted) {
+          document.body.appendChild(popover);
+          mounted = true;
+        }
+        const rect = trigger.getBoundingClientRect();
+        popover.style.left = (rect.left + window.scrollX) + "px";
+        popover.style.top  = (rect.bottom + window.scrollY + 4) + "px";
+        popover.hidden = false;
+        trigger.setAttribute("aria-expanded", "true");
+      }
+      function close() {
+        popover.hidden = true;
+        trigger.setAttribute("aria-expanded", "false");
+      }
+      trigger.addEventListener("click", () => {
+        trigger.getAttribute("aria-expanded") === "true" ? close() : open();
+      });
+      listbox.addEventListener("click", e => {
+        const item = e.target.closest('[role="option"]');
+        if (!item) return;
+        listbox.querySelectorAll('.Mui-selected').forEach(el => el.classList.remove("Mui-selected"));
+        item.classList.add("Mui-selected");
+        display.textContent = item.textContent;
+        close();
+      });
+    </script>
+  </body>
+</html>

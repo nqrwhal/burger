@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: Select2 (country)</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      label { display: block; margin-bottom: 6px; font-weight: 500; }
+      .select2-container { width: 320px !important; }
+    </style>
+  </head>
+  <body>
+    <h1>Select2 — country</h1>
+    <p>This loads the real Select2 from a CDN. Expected: the backing &lt;select&gt; gets reordered, then Select2 is re-initialized so the dropdown reflects the new order.</p>
+
+    <label for="country">Country</label>
+    <select id="country" name="country" autocomplete="country" style="width: 320px">
+      <option value="">Select country</option>
+      <option value="AR">Argentina</option>
+      <option value="AU">Australia</option>
+      <option value="BR">Brazil</option>
+      <option value="CA">Canada</option>
+      <option value="CN">China</option>
+      <option value="DE">Germany</option>
+      <option value="FR">France</option>
+      <option value="GB">United Kingdom</option>
+      <option value="IN">India</option>
+      <option value="IT">Italy</option>
+      <option value="JP">Japan</option>
+      <option value="MX">Mexico</option>
+      <option value="NL">Netherlands</option>
+      <option value="NO">Norway</option>
+      <option value="ES">Spain</option>
+      <option value="SE">Sweden</option>
+      <option value="US">United States</option>
+      <option value="UY">Uruguay</option>
+    </select>
+
+    <p><strong>Note:</strong> Select2 requires jQuery. If you load this from
+    <code>file://</code> the CDN works fine in modern Chrome; if it doesn't,
+    try a local web server.</p>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+      jQuery(function ($) {
+        $('#country').select2({ placeholder: 'Select country' });
+      });
+    </script>
+  </body>
+</html>

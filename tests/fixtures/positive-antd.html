@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: Ant Design Select pattern (country)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .ant-select {
+        display: inline-block; position: relative;
+      }
+      .ant-select-selector {
+        width: 280px; padding: 4px 11px;
+        border: 1px solid #d9d9d9; border-radius: 6px; background: white;
+        cursor: pointer; min-height: 32px;
+      }
+      .ant-select-dropdown {
+        position: absolute; top: 100%; left: 0; z-index: 1050;
+        margin-top: 4px;
+        background: white; border-radius: 8px; padding: 4px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+        width: 280px; max-height: 256px; overflow: auto;
+      }
+      .ant-select-dropdown[hidden] { display: none; }
+      .ant-select-item-option {
+        padding: 5px 12px; border-radius: 4px; cursor: pointer;
+      }
+      .ant-select-item-option:hover { background: #f5f5f5; }
+      .ant-select-item-option-selected { background: #e6f4ff; }
+    </style>
+  </head>
+  <body>
+    <h1>Ant Design Select pattern — country (non-virtualized)</h1>
+    <p>Click the trigger. The dropdown items are <code>.ant-select-item-option</code> with no native role. The Ant Design adapter synthesizes <code>role=option</code> so the generic ARIA adapter can handle them. Expected: United States moves to the top.</p>
+
+    <div class="ant-select" id="antd-root">
+      <div
+        class="ant-select-selector"
+        role="combobox"
+        aria-haspopup="listbox"
+        aria-expanded="false"
+        aria-controls="antd-dropdown"
+        aria-label="Country"
+        id="antd-trigger"
+      >Select country</div>
+
+      <div class="ant-select-dropdown" id="antd-dropdown" hidden>
+        <div class="ant-select-item-option" title="AR">Argentina</div>
+        <div class="ant-select-item-option" title="AU">Australia</div>
+        <div class="ant-select-item-option" title="BR">Brazil</div>
+        <div class="ant-select-item-option" title="CA">Canada</div>
+        <div class="ant-select-item-option" title="CN">China</div>
+        <div class="ant-select-item-option" title="DE">Germany</div>
+        <div class="ant-select-item-option" title="FR">France</div>
+        <div class="ant-select-item-option" title="GB">United Kingdom</div>
+        <div class="ant-select-item-option" title="IN">India</div>
+        <div class="ant-select-item-option" title="IT">Italy</div>
+        <div class="ant-select-item-option" title="JP">Japan</div>
+        <div class="ant-select-item-option" title="MX">Mexico</div>
+        <div class="ant-select-item-option" title="NL">Netherlands</div>
+        <div class="ant-select-item-option" title="ES">Spain</div>
+        <div class="ant-select-item-option" title="SE">Sweden</div>
+        <div class="ant-select-item-option" title="US">United States</div>
+        <div class="ant-select-item-option" title="UY">Uruguay</div>
+      </div>
+    </div>
+
+    <script>
+      const trigger = document.getElementById("antd-trigger");
+      const dropdown = document.getElementById("antd-dropdown");
+      trigger.addEventListener("click", () => {
+        const open = trigger.getAttribute("aria-expanded") === "true";
+        trigger.setAttribute("aria-expanded", open ? "false" : "true");
+        dropdown.hidden = open;
+      });
+      dropdown.addEventListener("click", e => {
+        const item = e.target.closest(".ant-select-item-option");
+        if (!item) return;
+        dropdown.querySelectorAll(".ant-select-item-option-selected").forEach(el => el.classList.remove("ant-select-item-option-selected"));
+        item.classList.add("ant-select-item-option-selected");
+        trigger.textContent = item.textContent;
+        trigger.setAttribute("aria-expanded", "false");
+        dropdown.hidden = true;
+      });
+    </script>
+  </body>
+</html>

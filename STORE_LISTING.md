@@ -30,11 +30,11 @@ What it does
 What it never does
 • It never auto-selects an option. You always pick.
 • It never submits a form.
-• It never touches checkout, payment, banking, tax, citizenship, residency, or identity-verification fields. These are skipped by design.
+• It never touches fields whose label indicates a legally meaningful selection — citizenship, country of birth, country of incorporation, tax residency, passport issuing country. Those are skipped by design.
 • It never sends data anywhere. No analytics, no telemetry, no network requests.
 
 Safety first
-Burger is deliberately conservative. It rejects look-alike fields — county lists, US state pickers, cloud regions like us-east-1, currency-named language pickers, etc. — using a confidence score, and it refuses to act on sensitive URLs. If you don't want it on a particular site, one click in the popup disables it there permanently.
+Burger is deliberately conservative. It rejects look-alike fields — county lists, US state pickers, cloud regions like us-east-1, currency-named language pickers, etc. — using a confidence score. The reorder-only guarantee (we never click, never fire events, never change the selected value) is what makes the tool safe to run on government forms, visa applications, and other long country-list pages where it's most useful. If you don't want it on a particular site, one click in the popup disables it there permanently.
 
 Source
 Burger is open source. The full source ships with the extension; nothing is downloaded at runtime.
@@ -51,7 +51,7 @@ Burger has one purpose: reorder the options inside dropdown elements (native <se
 ### host_permissions: `<all_urls>`
 
 ```
-Burger needs to run its content script on any page that may contain a country or currency dropdown. The script reads the option list of dropdowns to recognize them; it does not transmit page content anywhere, does not modify any element other than the dropdown's option order, and refuses to act on sensitive pages (checkout, payment, banking, tax, identity verification, etc.).
+Burger needs to run its content script on any page that may contain a country or currency dropdown. The script reads the option list of dropdowns to recognize them; it does not transmit page content anywhere, and does not modify any element other than the dropdown's option order. Fields whose label indicates a legally meaningful selection (citizenship, country of birth, tax residency, etc.) are recognized and skipped.
 ```
 
 ### permission: `storage`

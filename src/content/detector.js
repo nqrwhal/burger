@@ -9,12 +9,17 @@
 const ACT_THRESHOLD = 80;
 const CANDIDATE_THRESHOLD = 60;
 
-// URL-level sensitivity: don't act on pages that look like checkout, payment,
-// banking, tax, identity, etc.
-const SENSITIVE_URL_RE = /\b(checkout|payment|billing|tax|visa|immigration|gov|kyc|aml|identity|verification|healthcare|insurance|bank|brokerage|passport)\b/i;
-
-// Field-level sensitivity for country selectors: legal-meaning fields, not
-// convenience.
+// Field-level sensitivity for country selectors: legal-meaning fields where
+// the selected value IS the statement (citizenship, country of birth, tax
+// residency). Reordering these is fine — we never change the selection — but
+// we still skip them so the user is never even tempted to assume a default.
+//
+// We intentionally do NOT skip whole URLs. Government forms, visa applications,
+// passport renewals, job-application country fields, etc. are the primary
+// target use case: long, alphabetized country lists where scrolling past
+// Afghanistan to find the United States is exactly the pain Burger exists to
+// fix. The reorder-only guarantee (never change selected value, never click,
+// never fire events) is what makes acting on these pages safe.
 const SENSITIVE_COUNTRY_FIELD_RE = /\b(citizenship|nationality|residency|country\s*of\s*birth|country\s*of\s*incorporation|passport\s*issuing|tax\s*country|legal\s*country)\b/i;
 
 // Strong negatives for *country* selectors. These regexes are only used when
@@ -101,7 +106,6 @@ function scoreAsCountry(blob, options, autocomplete) {
   let score = 0;
   let sensitive = false;
 
-  if (SENSITIVE_URL_RE.test(location.href)) { sensitive = true; reasons.push("sensitive-url"); }
   if (SENSITIVE_COUNTRY_FIELD_RE.test(blob)) { sensitive = true; reasons.push("sensitive-field"); }
 
   // Hard negatives.
@@ -276,6 +280,5 @@ window.__usFirst.detector = {
   CANDIDATE_THRESHOLD,
   scoreSelector,
   scoreOptions,
-  attrBlob,
-  SENSITIVE_URL_RE
+  attrBlob
 };

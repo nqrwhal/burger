@@ -11,7 +11,6 @@ Burger does not collect, transmit, store on remote servers, or sell any data abo
 Burger is a Chrome extension that reorders the options inside `<select>` and ARIA listbox elements so that "United States" appears at the top of country dropdowns and "USD" appears at the top of currency dropdowns. To do that, it reads:
 
 - The structure and attributes of dropdown elements on pages you load (option labels, values, `name`, `id`, ARIA roles, labels).
-- The URL of the current page, but only to recognize sensitive contexts (checkout, payment, banking, tax, identity, etc.) where it deliberately does nothing.
 
 This reading happens entirely inside your browser. No page content, form data, URL, or option text is sent anywhere.
 
@@ -32,7 +31,7 @@ This data lives on your device. It is not synced, not transmitted, not sold, and
 - It does **not** auto-select any option. It only changes the visual order of options.
 - It does **not** submit forms.
 - It does **not** spoof your location, identity, citizenship, residency, or any other attribute.
-- It does **not** modify pages on sensitive URLs (checkout, payment, billing, tax, banking, KYC, identity verification, etc.).
+- It does **not** modify dropdowns whose field label indicates a legally meaningful selection (citizenship, country of birth, country of incorporation, tax residency, passport issuing country, etc.).
 - It does **not** read or modify form values, only the option list of a dropdown.
 - It does **not** load remote code. All scripts ship inside the extension package.
 - It does **not** use analytics, telemetry, or crash reporting.

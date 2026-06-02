@@ -20,7 +20,6 @@
   let enabled = true;
   let kindsEnabled = { country: true, currency: true };
   let debugMode = false;
-  const sensitiveUrl = detector.SENSITIVE_URL_RE.test(location.href);
 
   // Track which selectors we've already scored (one-shot) and which we've
   // actually modified (so "restore" can find them). Two collections because
@@ -115,7 +114,7 @@
   }
 
   function scanOnce() {
-    if (!enabled || sensitiveUrl) return;
+    if (!enabled) return;
     if (debugMode) console.log("[burger] scanOnce starting (enabled=" + enabled + ", debugMode=" + debugMode + ")");
     const t0 = debugMode ? performance.now() : 0;
     scanNative();
@@ -172,7 +171,6 @@
       sendResponse({
         host: location.hostname,
         enabled,
-        sensitiveUrl,
         modifiedCount: modifiedNative.size + modifiedAria.size
       });
       return false;

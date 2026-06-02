@@ -22,7 +22,6 @@ Settings changes apply live — no tab reload required.
 
 A dropdown is reordered only if **all** of:
 
-- Not on a sensitive URL (`/checkout`, `/payment`, `/billing`, `/bank`, `/tax`, `/visa`, etc. — country only)
 - Looks like a country selector (autocomplete/label/name says "country", or many recognized country names) **or** a currency selector (label/name says "currency", and options contain multiple ISO 4217 codes)
 - Contains a "United States" or "USD" option
 - Doesn't look like a county, cloud region, US state, language, timezone, or market field

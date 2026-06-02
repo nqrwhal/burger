@@ -2,7 +2,18 @@
 // manager, and debug overlay together, and reacts to settings changes live.
 
 (function () {
-  const { detector, nativeSelect, ariaAdapter, wrappedSelect, antdAdapter, mutationManager, settings, domWalk, debugOverlay } = window.__usFirst;
+  if (!window.__usFirst) {
+    console.error("[burger] window.__usFirst not initialized — shared modules failed to load.");
+    return;
+  }
+  const ns = window.__usFirst;
+  const missing = ["detector", "nativeSelect", "ariaAdapter", "wrappedSelect", "antdAdapter", "mutationManager", "settings", "domWalk", "debugOverlay"]
+    .filter(k => !ns[k]);
+  if (missing.length) {
+    console.error("[burger] missing modules:", missing);
+    return;
+  }
+  const { detector, nativeSelect, ariaAdapter, wrappedSelect, antdAdapter, mutationManager, settings, domWalk, debugOverlay } = ns;
 
   if (location.protocol === "chrome-extension:" || location.protocol === "about:") return;
 
@@ -26,21 +37,30 @@
   }
 
   function scanNative() {
-    const selects = domWalk.queryAllSelectsDeep(document);
+    let selects;
+    try { selects = domWalk.queryAllSelectsDeep(document); }
+    catch (e) { console.warn("[burger] queryAllSelectsDeep failed:", e); return; }
     for (const sel of selects) {
-      if (seenNative.has(sel)) {
-        if (nativeSelect.isProcessed(sel)) reapplyNativeIfNeeded(sel);
-        continue;
-      }
-      seenNative.add(sel);
-      const result = detector.scoreSelector(sel);
-      if (debugMode) debugOverlay.annotate(sel, result);
-      if (result.kind === "none") continue;
-      if (!shouldActOn(result.kind)) continue;
-      if (result.score < detector.ACT_THRESHOLD) continue;
+      try {
+        if (seenNative.has(sel)) {
+          if (nativeSelect.isProcessed(sel)) reapplyNativeIfNeeded(sel);
+          continue;
+        }
+        seenNative.add(sel);
+        const result = detector.scoreSelector(sel);
+        if (debugMode) {
+          console.log("[burger] native:", sel.name || sel.id || "(anon)", "→", result.kind, "score", result.score, result.reasons);
+          debugOverlay.annotate(sel, result);
+        }
+        if (result.kind === "none") continue;
+        if (!shouldActOn(result.kind)) continue;
+        if (result.score < detector.ACT_THRESHOLD) continue;
 
-      const r = nativeSelect.reorderNativeSelect(sel, result);
-      if (r.changed) modifiedNative.add(sel);
+        const r = nativeSelect.reorderNativeSelect(sel, result);
+        if (r.changed) modifiedNative.add(sel);
+      } catch (e) {
+        console.warn("[burger] native scan threw on element:", sel, e);
+      }
     }
   }
 
@@ -53,22 +73,28 @@
   }
 
   function scanAria() {
-    const listboxes = ariaAdapter.findOpenListboxes(document);
+    let listboxes;
+    try { listboxes = ariaAdapter.findOpenListboxes(document); }
+    catch (e) { console.warn("[burger] findOpenListboxes failed:", e); return; }
+    if (debugMode) console.log("[burger] aria: found", listboxes.length, "open listbox(es)");
     for (const lb of listboxes) {
-      // ARIA listboxes are often re-created on every open/close, so we
-      // re-score every time we see one rather than caching on the element.
-      // But we still avoid double-processing within the same open cycle via
-      // the PROCESSED_FLAG on the element.
-      if (ariaAdapter.isProcessed(lb)) continue;
-      seenAria.add(lb);
-      const result = ariaAdapter.scoreAriaListbox(lb);
-      if (debugMode) debugOverlay.annotate(lb, result);
-      if (result.kind === "none") continue;
-      if (!shouldActOn(result.kind)) continue;
-      if (result.score < detector.ACT_THRESHOLD) continue;
+      try {
+        if (ariaAdapter.isProcessed(lb)) continue;
+        seenAria.add(lb);
+        const result = ariaAdapter.scoreAriaListbox(lb);
+        if (debugMode) {
+          console.log("[burger] aria:", lb.id || lb.getAttribute("aria-label") || "(anon)", "→", result.kind, "score", result.score, result.reasons);
+          debugOverlay.annotate(lb, result);
+        }
+        if (result.kind === "none") continue;
+        if (!shouldActOn(result.kind)) continue;
+        if (result.score < detector.ACT_THRESHOLD) continue;
 
-      const r = ariaAdapter.reorderAriaListbox(lb, result);
-      if (r.changed) modifiedAria.add(lb);
+        const r = ariaAdapter.reorderAriaListbox(lb, result);
+        if (r.changed) modifiedAria.add(lb);
+      } catch (e) {
+        console.warn("[burger] aria scan threw on element:", lb, e);
+      }
     }
   }
 
@@ -90,12 +116,15 @@
 
   function scanOnce() {
     if (!enabled || sensitiveUrl) return;
+    if (debugMode) console.log("[burger] scanOnce starting (enabled=" + enabled + ", debugMode=" + debugMode + ")");
     scanNative();
-    // Synthesize ARIA roles on Ant Design dropdowns so the generic ARIA
-    // adapter can handle them in the next step.
-    if (antdAdapter) antdAdapter.synthesizeRoles(document);
+    if (antdAdapter) {
+      try { antdAdapter.synthesizeRoles(document); }
+      catch (e) { console.warn("[burger] antdAdapter.synthesizeRoles failed:", e); }
+    }
     scanAria();
-    scanWrapped();
+    try { scanWrapped(); }
+    catch (e) { console.warn("[burger] scanWrapped failed:", e); }
   }
 
   function restoreAll() {

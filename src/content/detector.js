@@ -85,7 +85,7 @@ function markPlaceholder(options, targetOption) {
 
 // --- Country scoring ------------------------------------------------------
 
-function scoreAsCountry(select, blob, options) {
+function scoreAsCountry(blob, options, autocomplete) {
   const { isRecognizedCountryLabel, isRecognizedCountryValue } = window.__usFirst.countries;
   const { isUSOption } = window.__usFirst.usAliases;
   const reasons = [];
@@ -111,7 +111,7 @@ function scoreAsCountry(select, blob, options) {
   if (COUNTRY_NEG_MARKET_RE.test(blob) && !/country/i.test(blob))
     return { score: 0, reasons: ["looks-like-market"], sensitive: false };
 
-  const ac = (select.getAttribute("autocomplete") || "").toLowerCase();
+  const ac = (autocomplete || "").toLowerCase();
   if (ac === "country" || ac === "country-name") { score += 50; reasons.push("autocomplete-country"); }
   if (/\bcountry\b/i.test(blob)) { score += 30; reasons.push("attr-country"); }
   if (/country[-_]?code|countrycode/i.test(blob)) { score += 20; reasons.push("attr-country-code"); }
@@ -150,7 +150,7 @@ function scoreAsCountry(select, blob, options) {
 
 // --- Currency scoring -----------------------------------------------------
 
-function scoreAsCurrency(select, blob, options) {
+function scoreAsCurrency(blob, options) {
   const { isRecognizedCurrencyLabel, isRecognizedCurrencyValue, isUSDOption } =
     window.__usFirst.currencies;
   const reasons = [];
@@ -207,12 +207,13 @@ function scoreAsCurrency(select, blob, options) {
 
 // --- Orchestrator ---------------------------------------------------------
 
-function scoreSelector(select) {
-  const options = extractOptions(select);
-  const blob = attrBlob(select);
-
+// Score a set of normalized options. Used by both native <select> and ARIA
+// listbox paths. `blob` is the attribute/label text, `autocomplete` is the
+// HTML autocomplete attribute (if any — ARIA combobox inputs sometimes set it
+// to "country" too).
+function scoreOptions({ blob, options, autocomplete }) {
   // Try country first. If it's a high-confidence country selector we're done.
-  const country = scoreAsCountry(select, blob, options);
+  const country = scoreAsCountry(blob, options, autocomplete);
   if (country.score >= ACT_THRESHOLD && country.targetOption) {
     markPlaceholder(options, country.targetOption);
     return {
@@ -226,7 +227,7 @@ function scoreSelector(select) {
   }
 
   // Otherwise try currency.
-  const currency = scoreAsCurrency(select, blob, options);
+  const currency = scoreAsCurrency(blob, options);
   if (currency.score >= ACT_THRESHOLD && currency.targetOption) {
     markPlaceholder(options, currency.targetOption);
     return {
@@ -239,7 +240,6 @@ function scoreSelector(select) {
     };
   }
 
-  // Neither qualified. Return the better-scoring one for popup diagnostics.
   const best = country.score >= currency.score ? country : currency;
   return {
     kind: "none",
@@ -251,10 +251,20 @@ function scoreSelector(select) {
   };
 }
 
+function scoreSelector(select) {
+  return scoreOptions({
+    blob: attrBlob(select),
+    options: extractOptions(select),
+    autocomplete: select.getAttribute("autocomplete")
+  });
+}
+
 window.__usFirst = window.__usFirst || {};
 window.__usFirst.detector = {
   ACT_THRESHOLD,
   CANDIDATE_THRESHOLD,
   scoreSelector,
+  scoreOptions,
+  attrBlob,
   SENSITIVE_URL_RE
 };

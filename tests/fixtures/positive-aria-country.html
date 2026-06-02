@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: ARIA combobox (country)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .combo { position: relative; width: 280px; }
+      .combo input { width: 100%; padding: 8px 10px; border: 1px solid #d4d4d8; border-radius: 6px; box-sizing: border-box; }
+      .listbox { list-style: none; margin: 4px 0 0; padding: 4px 0; border: 1px solid #d4d4d8; border-radius: 6px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); max-height: 240px; overflow: auto; }
+      .listbox[hidden] { display: none; }
+      .option { padding: 6px 10px; cursor: pointer; }
+      .option[aria-selected="true"] { background: #f59e0b; color: white; }
+      .option:hover { background: #f3f4f6; }
+    </style>
+  </head>
+  <body>
+    <h1>ARIA combobox (country)</h1>
+    <p>Click the field to open the listbox. Expected: "United States" moves to the top once visible.</p>
+
+    <div class="combo">
+      <input
+        type="text"
+        role="combobox"
+        aria-controls="country-listbox"
+        aria-expanded="false"
+        aria-autocomplete="none"
+        aria-label="Country"
+        id="country-input"
+        readonly
+        placeholder="Select country"
+      />
+      <ul id="country-listbox" role="listbox" aria-label="Country" class="listbox" hidden>
+        <li role="option" data-value="AR">Argentina</li>
+        <li role="option" data-value="AU">Australia</li>
+        <li role="option" data-value="BR">Brazil</li>
+        <li role="option" data-value="CA" aria-selected="true">Canada</li>
+        <li role="option" data-value="CN">China</li>
+        <li role="option" data-value="DE">Germany</li>
+        <li role="option" data-value="FR">France</li>
+        <li role="option" data-value="GB">United Kingdom</li>
+        <li role="option" data-value="IN">India</li>
+        <li role="option" data-value="IT">Italy</li>
+        <li role="option" data-value="JP">Japan</li>
+        <li role="option" data-value="MX">Mexico</li>
+        <li role="option" data-value="NL">Netherlands</li>
+        <li role="option" data-value="NO">Norway</li>
+        <li role="option" data-value="PL">Poland</li>
+        <li role="option" data-value="ES">Spain</li>
+        <li role="option" data-value="SE">Sweden</li>
+        <li role="option" data-value="TR">Turkey</li>
+        <li role="option" data-value="US">United States</li>
+        <li role="option" data-value="UY">Uruguay</li>
+      </ul>
+    </div>
+
+    <script>
+      const input = document.getElementById("country-input");
+      const list = document.getElementById("country-listbox");
+      function open() {
+        list.hidden = false;
+        input.setAttribute("aria-expanded", "true");
+      }
+      function close() {
+        list.hidden = true;
+        input.setAttribute("aria-expanded", "false");
+      }
+      input.addEventListener("click", () => list.hidden ? open() : close());
+      list.addEventListener("click", e => {
+        const opt = e.target.closest('[role="option"]');
+        if (!opt) return;
+        for (const o of list.querySelectorAll('[role="option"]')) o.removeAttribute("aria-selected");
+        opt.setAttribute("aria-selected", "true");
+        input.value = opt.textContent;
+        close();
+      });
+    </script>
+  </body>
+</html>

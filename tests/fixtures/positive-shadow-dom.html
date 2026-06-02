@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: native select inside open shadow DOM</title>
+    <style> body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; } </style>
+  </head>
+  <body>
+    <h1>Native select inside a web component (open shadow root)</h1>
+    <p>Expected: "United States" moves to the top of the &lt;select&gt; inside &lt;country-picker&gt;.</p>
+    <country-picker></country-picker>
+    <script>
+      class CountryPicker extends HTMLElement {
+        constructor() {
+          super();
+          const root = this.attachShadow({ mode: "open" });
+          root.innerHTML = `
+            <label>Country
+              <select name="country" autocomplete="country">
+                <option value="">Select country</option>
+                <option value="AR">Argentina</option>
+                <option value="AU">Australia</option>
+                <option value="BR">Brazil</option>
+                <option value="CA">Canada</option>
+                <option value="CN">China</option>
+                <option value="DE">Germany</option>
+                <option value="FR">France</option>
+                <option value="GB">United Kingdom</option>
+                <option value="IN">India</option>
+                <option value="IT">Italy</option>
+                <option value="JP">Japan</option>
+                <option value="MX">Mexico</option>
+                <option value="NL">Netherlands</option>
+                <option value="NO">Norway</option>
+                <option value="ES">Spain</option>
+                <option value="SE">Sweden</option>
+                <option value="US">United States</option>
+                <option value="UY">Uruguay</option>
+              </select>
+            </label>`;
+        }
+      }
+      customElements.define("country-picker", CountryPicker);
+    </script>
+  </body>
+</html>

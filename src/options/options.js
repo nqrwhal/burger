@@ -3,6 +3,7 @@ const DEFAULTS = {
   globalEnabled: true,
   countryEnabled: true,
   currencyEnabled: true,
+  debugMode: false,
   disabledHosts: {}
 };
 const $ = id => document.getElementById(id);
@@ -59,11 +60,13 @@ async function init() {
   $("global").checked = s.globalEnabled;
   $("country").checked = s.countryEnabled;
   $("currency").checked = s.currencyEnabled;
+  $("debug").checked = s.debugMode;
   renderDisabledList(s);
 
   bindCheckbox("global", "globalEnabled");
   bindCheckbox("country", "countryEnabled");
   bindCheckbox("currency", "currencyEnabled");
+  bindCheckbox("debug", "debugMode");
 
   // If the user removes a host elsewhere (or the popup writes a change),
   // mirror it here without requiring a reload.
@@ -73,6 +76,7 @@ async function init() {
     $("global").checked = next.globalEnabled;
     $("country").checked = next.countryEnabled;
     $("currency").checked = next.currencyEnabled;
+    $("debug").checked = next.debugMode;
     renderDisabledList(next);
   });
 }

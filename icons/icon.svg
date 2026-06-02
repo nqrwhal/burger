@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" shape-rendering="geometricPrecision">
+  <!-- Background tile: warm amber chip -->
+  <rect x="0" y="0" width="128" height="128" rx="28" fill="#f59e0b"/>
+  <!-- Top bun -->
+  <path d="M22 56 Q22 26 64 26 Q106 26 106 56 L106 64 L22 64 Z" fill="#f5c067"/>
+  <!-- Sesame seeds -->
+  <ellipse cx="44" cy="42" rx="3" ry="2" fill="#fff3d6" transform="rotate(-20 44 42)"/>
+  <ellipse cx="64" cy="36" rx="3" ry="2" fill="#fff3d6"/>
+  <ellipse cx="84" cy="42" rx="3" ry="2" fill="#fff3d6" transform="rotate(20 84 42)"/>
+  <ellipse cx="54" cy="50" rx="3" ry="2" fill="#fff3d6" transform="rotate(-10 54 50)"/>
+  <ellipse cx="74" cy="50" rx="3" ry="2" fill="#fff3d6" transform="rotate(10 74 50)"/>
+  <!-- Lettuce -->
+  <path d="M18 64 L110 64 L114 74 Q98 70 90 76 Q82 70 74 76 Q66 70 58 76 Q50 70 42 76 Q34 70 26 76 Q22 70 14 74 Z" fill="#65a30d"/>
+  <!-- Cheese -->
+  <path d="M20 76 L108 76 L102 86 Q88 82 80 86 Q72 82 64 86 Q56 82 48 86 Q40 82 32 86 L26 86 Z" fill="#fde68a"/>
+  <!-- Patty -->
+  <rect x="20" y="86" width="88" height="14" rx="6" fill="#6d3a1f"/>
+  <!-- Bottom bun -->
+  <path d="M22 100 L106 100 Q106 116 64 116 Q22 116 22 100 Z" fill="#e9a64a"/>
+</svg>

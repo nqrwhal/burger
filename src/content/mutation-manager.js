@@ -26,12 +26,18 @@ function createManager(onScanRequested) {
 
   const observer = new MutationObserver(mutations => {
     if (performance.now() < suppressUntil) return;
-    // Cheap filter: only trigger if at least one mutation touched a subtree
-    // that might contain a <select>, or added/removed nodes.
     for (const m of mutations) {
       if (m.type === "childList" && (m.addedNodes.length || m.removedNodes.length)) {
         requestScan("mutation-childlist");
         return;
+      }
+      if (m.type === "attributes") {
+        // aria-expanded going true means a combobox just opened — that's our
+        // cue to scan for newly visible listboxes.
+        if (m.attributeName === "aria-expanded" || m.attributeName === "aria-hidden") {
+          requestScan("aria-state-change");
+          return;
+        }
       }
     }
   });
@@ -39,7 +45,9 @@ function createManager(onScanRequested) {
   function start() {
     observer.observe(document.documentElement, {
       childList: true,
-      subtree: true
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-expanded", "aria-hidden"]
     });
     // Also scan on SPA history changes — many frameworks change route without
     // triggering childList mutations on the root.

@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: ARIA combobox (currency)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .combo { position: relative; width: 280px; }
+      .combo input { width: 100%; padding: 8px 10px; border: 1px solid #d4d4d8; border-radius: 6px; box-sizing: border-box; }
+      .listbox { list-style: none; margin: 4px 0 0; padding: 4px 0; border: 1px solid #d4d4d8; border-radius: 6px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+      .listbox[hidden] { display: none; }
+      .option { padding: 6px 10px; cursor: pointer; }
+      .option:hover { background: #f3f4f6; }
+    </style>
+  </head>
+  <body>
+    <h1>ARIA combobox (currency)</h1>
+    <p>Click the field. Expected: "USD - US Dollar" moves to the top.</p>
+
+    <div class="combo">
+      <input
+        type="text"
+        role="combobox"
+        aria-controls="currency-listbox"
+        aria-expanded="false"
+        aria-autocomplete="none"
+        aria-label="Currency"
+        id="currency-input"
+        readonly
+        placeholder="Select currency"
+      />
+      <ul id="currency-listbox" role="listbox" aria-label="Currency" class="listbox" hidden>
+        <li role="option" data-value="EUR">EUR - Euro</li>
+        <li role="option" data-value="GBP">GBP - British Pound</li>
+        <li role="option" data-value="JPY">JPY - Japanese Yen</li>
+        <li role="option" data-value="CAD">CAD - Canadian Dollar</li>
+        <li role="option" data-value="AUD">AUD - Australian Dollar</li>
+        <li role="option" data-value="CHF">CHF - Swiss Franc</li>
+        <li role="option" data-value="USD">USD - US Dollar</li>
+        <li role="option" data-value="SEK">SEK - Swedish Krona</li>
+      </ul>
+    </div>
+
+    <script>
+      const input = document.getElementById("currency-input");
+      const list = document.getElementById("currency-listbox");
+      input.addEventListener("click", () => {
+        const open = list.hidden;
+        list.hidden = !open;
+        input.setAttribute("aria-expanded", open ? "true" : "false");
+      });
+    </script>
+  </body>
+</html>

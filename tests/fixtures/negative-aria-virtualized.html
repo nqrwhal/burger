@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Negative: virtualized ARIA listbox</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .listbox { list-style: none; margin: 8px 0 0; padding: 4px 0; border: 1px solid #d4d4d8; border-radius: 6px; background: #fff; }
+      .option { padding: 6px 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>Virtualized ARIA listbox — must NOT be modified</h1>
+    <p>Options carry aria-posinset/aria-setsize, meaning the visible options are only a window into a larger virtual list.</p>
+    <input role="combobox" aria-controls="vlist" aria-expanded="true" aria-label="Country" readonly />
+    <ul id="vlist" role="listbox" aria-label="Country" class="listbox">
+      <li role="option" aria-posinset="50" aria-setsize="250" data-value="GR">Greece</li>
+      <li role="option" aria-posinset="51" aria-setsize="250" data-value="GT">Guatemala</li>
+      <li role="option" aria-posinset="52" aria-setsize="250" data-value="HN">Honduras</li>
+      <li role="option" aria-posinset="53" aria-setsize="250" data-value="HK">Hong Kong</li>
+      <li role="option" aria-posinset="54" aria-setsize="250" data-value="IN">India</li>
+      <li role="option" aria-posinset="55" aria-setsize="250" data-value="US">United States</li>
+    </ul>
+  </body>
+</html>

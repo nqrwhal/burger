@@ -1,54 +1,90 @@
-// Content script entry. Wires the detector, native-select adapter, and
-// mutation manager together, and reacts to settings changes live (no reload
-// needed when the user flips the popup toggle).
+// Content script entry. Wires the detector, native + ARIA adapters, mutation
+// manager, and debug overlay together, and reacts to settings changes live.
 
 (function () {
-  const { detector, nativeSelect, mutationManager, settings } = window.__usFirst;
+  const { detector, nativeSelect, ariaAdapter, mutationManager, settings, domWalk, debugOverlay } = window.__usFirst;
 
   if (location.protocol === "chrome-extension:" || location.protocol === "about:") return;
 
   let enabled = true;
   let kindsEnabled = { country: true, currency: true };
+  let debugMode = false;
   const sensitiveUrl = detector.SENSITIVE_URL_RE.test(location.href);
 
-  // Track which selects we've already scored (one-shot) and which we've
-  // actually modified (so the "restore" action can find them).
-  const seen = new WeakSet();
-  const modified = new Set();
+  // Track which selectors we've already scored (one-shot) and which we've
+  // actually modified (so "restore" can find them). Two collections because
+  // native selects use WeakSet keyed by element; modified is iterated.
+  const seenNative = new WeakSet();
+  const modifiedNative = new Set();
+  const seenAria = new WeakSet();
+  const modifiedAria = new Set();
 
-  function scanOnce() {
-    if (!enabled || sensitiveUrl) return;
-    const selects = document.querySelectorAll("select");
+  function shouldActOn(kind) {
+    if (kind === "country") return kindsEnabled.country;
+    if (kind === "currency") return kindsEnabled.currency;
+    return false;
+  }
+
+  function scanNative() {
+    const selects = domWalk.queryAllSelectsDeep(document);
     for (const sel of selects) {
-      if (seen.has(sel)) {
-        // Framework re-rendered? Re-apply.
-        if (nativeSelect.isProcessed(sel)) reapplyIfNeeded(sel);
+      if (seenNative.has(sel)) {
+        if (nativeSelect.isProcessed(sel)) reapplyNativeIfNeeded(sel);
         continue;
       }
-      seen.add(sel);
+      seenNative.add(sel);
       const result = detector.scoreSelector(sel);
+      if (debugMode) debugOverlay.annotate(sel, result);
       if (result.kind === "none") continue;
-      if (result.kind === "country" && !kindsEnabled.country) continue;
-      if (result.kind === "currency" && !kindsEnabled.currency) continue;
+      if (!shouldActOn(result.kind)) continue;
       if (result.score < detector.ACT_THRESHOLD) continue;
 
       const r = nativeSelect.reorderNativeSelect(sel, result);
-      if (r.changed) modified.add(sel);
+      if (r.changed) modifiedNative.add(sel);
     }
   }
 
-  function reapplyIfNeeded(sel) {
+  function reapplyNativeIfNeeded(sel) {
     const result = detector.scoreSelector(sel);
-    if (result.kind === "country" && !kindsEnabled.country) return;
-    if (result.kind === "currency" && !kindsEnabled.currency) return;
+    if (!shouldActOn(result.kind)) return;
     if (result.score >= detector.ACT_THRESHOLD && result.targetOption) {
       nativeSelect.reorderNativeSelect(sel, result);
     }
   }
 
-  // Must match siteKeyFromUrl() in the popup so the popup and content script
-  // agree on the disabledHosts key. file:// pages share one key, http(s) pages
-  // are keyed by hostname.
+  function scanAria() {
+    const listboxes = ariaAdapter.findOpenListboxes(document);
+    for (const lb of listboxes) {
+      // ARIA listboxes are often re-created on every open/close, so we
+      // re-score every time we see one rather than caching on the element.
+      // But we still avoid double-processing within the same open cycle via
+      // the PROCESSED_FLAG on the element.
+      if (ariaAdapter.isProcessed(lb)) continue;
+      seenAria.add(lb);
+      const result = ariaAdapter.scoreAriaListbox(lb);
+      if (debugMode) debugOverlay.annotate(lb, result);
+      if (result.kind === "none") continue;
+      if (!shouldActOn(result.kind)) continue;
+      if (result.score < detector.ACT_THRESHOLD) continue;
+
+      const r = ariaAdapter.reorderAriaListbox(lb, result);
+      if (r.changed) modifiedAria.add(lb);
+    }
+  }
+
+  function scanOnce() {
+    if (!enabled || sensitiveUrl) return;
+    scanNative();
+    scanAria();
+  }
+
+  function restoreAll() {
+    for (const sel of modifiedNative) nativeSelect.restoreOriginalOrder(sel);
+    modifiedNative.clear();
+    for (const lb of modifiedAria) ariaAdapter.restoreAriaListbox(lb);
+    modifiedAria.clear();
+  }
+
   function siteKey() {
     if (location.protocol === "file:") return "file://";
     return location.hostname.toLowerCase();
@@ -57,6 +93,9 @@
   async function refreshSettings() {
     enabled = await settings.isEnabledForHost(siteKey());
     kindsEnabled = await settings.getKindsEnabled();
+    const all = await settings.loadAll();
+    debugMode = !!all.debugMode;
+    if (debugOverlay) debugOverlay.setEnabled(debugMode);
   }
 
   async function init() {
@@ -64,28 +103,24 @@
     const mgr = mutationManager.createManager(scanOnce);
     mgr.start();
 
-    // Live-react to settings changes from the popup or options page.
     chrome.storage.onChanged.addListener(async (changes, area) => {
       if (area !== "local" || !changes.burgerizeSettings) return;
       await refreshSettings();
       if (enabled) {
         mgr.requestScan("settings-changed");
       } else {
-        // User just disabled — restore everything we touched.
-        for (const sel of modified) nativeSelect.restoreOriginalOrder(sel);
-        modified.clear();
+        restoreAll();
       }
     });
   }
 
-  // Popup needs to know enabled state. We answer with the bare minimum.
   chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
     if (msg && msg.type === "burgerize:get-state") {
       sendResponse({
         host: location.hostname,
         enabled,
         sensitiveUrl,
-        modifiedCount: modified.size
+        modifiedCount: modifiedNative.size + modifiedAria.size
       });
       return false;
     }

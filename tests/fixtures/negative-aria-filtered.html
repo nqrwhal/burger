@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Negative: ARIA combobox while filtering</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .listbox { list-style: none; margin: 8px 0 0; padding: 4px 0; border: 1px solid #d4d4d8; border-radius: 6px; }
+      .option { padding: 6px 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>ARIA combobox while user is filtering — must NOT reorder</h1>
+    <p>The input already has typed text and uses aria-autocomplete="list". The site is filtering for the user; we must not fight it.</p>
+    <input
+      role="combobox"
+      aria-controls="flist"
+      aria-expanded="true"
+      aria-autocomplete="list"
+      aria-label="Country"
+      value="ger"
+    />
+    <ul id="flist" role="listbox" aria-label="Country" class="listbox">
+      <li role="option" data-value="DE">Germany</li>
+      <li role="option" data-value="NG">Niger</li>
+      <li role="option" data-value="GE">Georgia</li>
+      <li role="option" data-value="US">United States</li>
+    </ul>
+  </body>
+</html>

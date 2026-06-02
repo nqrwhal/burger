@@ -5,6 +5,9 @@ const DEFAULTS = {
   globalEnabled: true,
   countryEnabled: true,
   currencyEnabled: true,
+  // When true, the content script outlines detected selectors and shows a
+  // tooltip with score/kind/reasons on hover. Off by default.
+  debugMode: false,
   // Hostnames where the user has explicitly disabled the extension. Object
   // (not array) so lookups are O(1) and toggles are idempotent.
   disabledHosts: {}

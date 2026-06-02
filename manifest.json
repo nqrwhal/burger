@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Burger",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Moves United States (and USD) to the top of country and currency dropdowns. Reorder-only, never auto-selects.",
   "permissions": ["storage"],
   "host_permissions": ["<all_urls>"],
@@ -16,8 +16,11 @@
         "src/shared/countries.js",
         "src/shared/currencies.js",
         "src/shared/settings.js",
+        "src/content/dom-walk.js",
         "src/content/detector.js",
         "src/content/native-select-adapter.js",
+        "src/content/aria-adapter.js",
+        "src/content/debug-overlay.js",
         "src/content/mutation-manager.js",
         "src/content/index.js"
       ],
@@ -25,9 +28,21 @@
       "all_frames": true
     }
   ],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "Burger"
+    "default_title": "Burger",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
   },
   "options_ui": {
     "page": "src/options/options.html",

@@ -10,8 +10,8 @@
 //     typing and the site is filtering for them.
 //   - Reapply on re-render (frameworks rewrite the menu on every render).
 
-const PROCESSED_FLAG = "__burgerAriaProcessed";
-const ORDER_ATTR = "data-burger-original-aria-order";
+const ARIA_PROCESSED_FLAG = "__burgerAriaProcessed";
+const ARIA_ORDER_ATTR = "data-burger-original-aria-order";
 
 function normalizeOption(el) {
   const { normalize } = window.__usFirst.usAliases;
@@ -97,7 +97,7 @@ function getAutocomplete(combobox) {
 }
 
 function isProcessed(listbox) {
-  return !!listbox[PROCESSED_FLAG];
+  return !!listbox[ARIA_PROCESSED_FLAG];
 }
 
 function reorderAriaListbox(listbox, scoreResult) {
@@ -112,18 +112,18 @@ function reorderAriaListbox(listbox, scoreResult) {
   if (scoreResult.options[0] && scoreResult.options[0].isPlaceholder) insertIndex = 1;
 
   if (optionEls[insertIndex] === targetEl) {
-    listbox[PROCESSED_FLAG] = true;
+    listbox[ARIA_PROCESSED_FLAG] = true;
     return { changed: false, reason: "already-on-top" };
   }
 
   // Save snapshot once (by id or text) for rollback.
-  if (!listbox.getAttribute(ORDER_ATTR)) {
+  if (!listbox.getAttribute(ARIA_ORDER_ATTR)) {
     try {
       const snapshot = optionEls.map(o => ({
         i: o.id || "",
         t: (o.textContent || "").trim()
       }));
-      listbox.setAttribute(ORDER_ATTR, JSON.stringify(snapshot));
+      listbox.setAttribute(ARIA_ORDER_ATTR, JSON.stringify(snapshot));
     } catch { /* huge list — skip rollback support */ }
   }
 
@@ -137,12 +137,12 @@ function reorderAriaListbox(listbox, scoreResult) {
     parent.insertBefore(targetEl, reference || parent.firstChild);
   }
 
-  listbox[PROCESSED_FLAG] = true;
+  listbox[ARIA_PROCESSED_FLAG] = true;
   return { changed: true, reason: "reordered" };
 }
 
 function restoreAriaListbox(listbox) {
-  const raw = listbox.getAttribute(ORDER_ATTR);
+  const raw = listbox.getAttribute(ARIA_ORDER_ATTR);
   if (!raw) return false;
   let snapshot;
   try { snapshot = JSON.parse(raw); } catch { return false; }
@@ -156,8 +156,8 @@ function restoreAriaListbox(listbox) {
     const el = byKey.get(`${entry.i}|${entry.t}`);
     if (el && el.parentNode) el.parentNode.appendChild(el);
   }
-  listbox.removeAttribute(ORDER_ATTR);
-  listbox[PROCESSED_FLAG] = false;
+  listbox.removeAttribute(ARIA_ORDER_ATTR);
+  listbox[ARIA_PROCESSED_FLAG] = false;
   return true;
 }
 
@@ -206,6 +206,6 @@ window.__usFirst.ariaAdapter = {
   reorderAriaListbox,
   restoreAriaListbox,
   isProcessed,
-  PROCESSED_FLAG,
-  ORDER_ATTR
+  ARIA_PROCESSED_FLAG,
+  ARIA_ORDER_ATTR
 };

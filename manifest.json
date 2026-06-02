@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Burger",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Moves United States (and USD) to the top of country and currency dropdowns. Reorder-only, never auto-selects.",
   "permissions": ["storage"],
   "host_permissions": ["<all_urls>"],

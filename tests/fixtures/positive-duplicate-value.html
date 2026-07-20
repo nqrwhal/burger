@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Positive: duplicate option values</title></head>
+  <body>
+    <h1>Country select with duplicate values</h1>
+    <p>Expected: US moves to top; the originally selected Canada element stays selected (not the duplicate).</p>
+    <form>
+      <label for="country">Country</label>
+      <select id="country" name="country" autocomplete="country">
+        <option value="">Select country</option>
+        <option value="CA" id="canada-primary" selected>Canada</option>
+        <option value="DE">Germany</option>
+        <option value="FR">France</option>
+        <option value="GB">United Kingdom</option>
+        <option value="CA" id="canada-dup">Canada</option>
+        <option value="US">United States</option>
+        <option value="UY">Uruguay</option>
+      </select>
+    </form>
+  </body>
+</html>

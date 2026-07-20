@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Negative: virtualized listbox (late aria-posinset)</title>
+    <style>
+      body { font: 14px -apple-system, sans-serif; max-width: 480px; margin: 2rem auto; padding: 0 1rem; }
+      .listbox { list-style: none; margin: 8px 0 0; padding: 4px 0; border: 1px solid #d4d4d8; border-radius: 6px; }
+      .option { padding: 6px 10px; }
+    </style>
+  </head>
+  <body>
+    <h1>Virtualized listbox — posinset only on later options</h1>
+    <p>First five options lack aria-posinset; later ones have it. Must NOT be reordered.</p>
+    <input role="combobox" aria-controls="vlist-late" aria-expanded="true" aria-label="Country" readonly />
+    <ul id="vlist-late" role="listbox" aria-label="Country" class="listbox">
+      <li role="option" data-value="AR">Argentina</li>
+      <li role="option" data-value="AU">Australia</li>
+      <li role="option" data-value="BR">Brazil</li>
+      <li role="option" data-value="CA">Canada</li>
+      <li role="option" data-value="CN">China</li>
+      <li role="option" aria-posinset="56" aria-setsize="250" data-value="DE">Germany</li>
+      <li role="option" aria-posinset="57" aria-setsize="250" data-value="US">United States</li>
+    </ul>
+  </body>
+</html>

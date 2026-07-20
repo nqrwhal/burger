@@ -75,3 +75,35 @@ test("negative-aria-filtered: combobox with active filter untouched", async ({ p
   expect(labels[0]).toBe("Germany");
   expect(labels[labels.length - 1]).toBe("United States");
 });
+
+test("negative-optgroup: optgroup country select left alone", async ({ page }) => {
+  await page.goto("/negative-optgroup.html");
+  await waitForBurger(page);
+  await settle(page);
+  const labels = await selectLabels(page, "#country");
+  // Placeholder, then Americas group starting with Argentina — US stays near end of Americas.
+  expect(labels[0]).toBe("Select country");
+  expect(labels[1]).toBe("Argentina");
+  expect(labels).toContain("United States");
+  expect(labels[labels.length - 1]).not.toBe("United States");
+  // Still after Mexico in original Americas order.
+  expect(labels.indexOf("United States")).toBeGreaterThan(labels.indexOf("Mexico"));
+});
+
+test("negative-aria-virtualized-late: posinset after first five still skipped", async ({ page }) => {
+  await page.goto("/negative-aria-virtualized-late.html");
+  await waitForBurger(page);
+  await settle(page);
+  const labels = await listboxLabels(page, "#vlist-late");
+  expect(labels[0]).toBe("Argentina");
+  expect(labels[labels.length - 1]).toBe("United States");
+});
+
+test("negative-aria-shadow-filtered: shadow combobox filter left alone", async ({ page }) => {
+  await page.goto("/negative-aria-shadow-filtered.html");
+  await waitForBurger(page);
+  await settle(page);
+  const labels = await listboxLabels(page, "#flist-shadow");
+  expect(labels[0]).toBe("Germany");
+  expect(labels[labels.length - 1]).toBe("United States");
+});

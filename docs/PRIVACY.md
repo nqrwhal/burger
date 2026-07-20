@@ -1,6 +1,6 @@
 # Burger — Privacy Policy
 
-_Last updated: 2026-06-01_
+_Last updated: 2026-07-20_
 
 ## TL;DR
 
@@ -11,6 +11,7 @@ Burger does not collect, transmit, store on remote servers, or sell any data abo
 Burger is a Chrome extension that reorders the options inside `<select>` and ARIA listbox elements so that "United States" appears at the top of country dropdowns and "USD" appears at the top of currency dropdowns. To do that, it reads:
 
 - The structure and attributes of dropdown elements on pages you load (option labels, values, `name`, `id`, ARIA roles, labels).
+- For ARIA comboboxes, whether a filter is active — which may include reading the combobox's current typed text — so Burger can avoid reordering while you are searching. That text is never stored or transmitted.
 
 This reading happens entirely inside your browser. No page content, form data, URL, or option text is sent anywhere.
 
@@ -24,6 +25,8 @@ Burger uses `chrome.storage.local` — your browser's own per-extension storage 
 - Whether the developer debug overlay is on.
 - A list of hostnames where you've toggled Burger off via the popup.
 
+Per-site disable is keyed by each frame's own hostname. Turning Burger off on a parent page does not automatically disable it inside a cross-origin iframe (for example an embedded payment or identity form on another domain).
+
 This data lives on your device. It is not synced, not transmitted, not sold, and not shared with any third party.
 
 ## What Burger does NOT do
@@ -32,7 +35,7 @@ This data lives on your device. It is not synced, not transmitted, not sold, and
 - It does **not** submit forms.
 - It does **not** spoof your location, identity, citizenship, residency, or any other attribute.
 - It does **not** modify dropdowns whose field label indicates a legally meaningful selection (citizenship, country of birth, country of incorporation, tax residency, passport issuing country, etc.).
-- It does **not** read or modify form values, only the option list of a dropdown.
+- It does **not** change which option is selected, and it does **not** read unrelated form fields. It only inspects dropdown option lists (and, when needed, combobox filter text as described above).
 - It does **not** load remote code. All scripts ship inside the extension package.
 - It does **not** use analytics, telemetry, or crash reporting.
 - It does **not** make network requests at all.

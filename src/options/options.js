@@ -56,6 +56,12 @@ function bindCheckbox(id, key) {
 }
 
 async function init() {
+  const ver = $("version");
+  if (ver) {
+    try { ver.textContent = "v" + chrome.runtime.getManifest().version; }
+    catch { /* keep HTML fallback */ }
+  }
+
   const s = await load();
   $("global").checked = s.globalEnabled;
   $("country").checked = s.countryEnabled;

@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Positive: SPA pushState injects country select</title>
+  </head>
+  <body>
+    <h1>pushState route change</h1>
+    <p>Click Navigate. A country &lt;select&gt; is injected without a full reload. Expected: US moves to top.</p>
+    <button type="button" id="nav">Navigate</button>
+    <div id="app"></div>
+    <script>
+      document.getElementById("nav").addEventListener("click", () => {
+        history.pushState({ page: "country" }, "", "#country");
+        document.getElementById("app").innerHTML = `
+          <label for="country">Country</label>
+          <select id="country" name="country" autocomplete="country">
+            <option value="">Select country</option>
+            <option value="AR">Argentina</option>
+            <option value="AU">Australia</option>
+            <option value="CA">Canada</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+            <option value="GB">United Kingdom</option>
+            <option value="JP">Japan</option>
+            <option value="MX">Mexico</option>
+            <option value="US">United States</option>
+            <option value="UY">Uruguay</option>
+          </select>
+        `;
+      });
+    </script>
+  </body>
+</html>

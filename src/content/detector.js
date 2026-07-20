@@ -47,11 +47,20 @@ function attrBlob(el) {
   ];
   // aria-labelledby: dereference the IDs and pull the referenced text. The
   // raw attribute value is meaningless (it's just IDs like "mui-label").
+  // Prefer deep lookup so labels inside open shadow roots still resolve.
   const labelledBy = el.getAttribute("aria-labelledby");
   if (labelledBy) {
+    const { getElementByIdDeep } = window.__usFirst.domWalk || {};
     for (const id of labelledBy.split(/\s+/)) {
       if (!id) continue;
-      const ref = el.ownerDocument.getElementById(id);
+      let ref = null;
+      if (getElementByIdDeep) {
+        const localRoot = typeof el.getRootNode === "function" ? el.getRootNode() : null;
+        if (localRoot) ref = getElementByIdDeep(localRoot, id);
+        if (!ref) ref = getElementByIdDeep(el.ownerDocument, id);
+      } else {
+        ref = el.ownerDocument.getElementById(id);
+      }
       if (ref) parts.push(ref.textContent);
     }
   }

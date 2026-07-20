@@ -125,20 +125,45 @@ export async function waitForOrder(
 // previous test could leak in — call this in beforeEach to guarantee a
 // known state. Writes via the options page (extension origin).
 export async function enableBurger(extContext: BrowserContext, extensionId: string) {
+  await writeBurgerSettings(extContext, extensionId, {
+    globalEnabled: true,
+    countryEnabled: true,
+    currencyEnabled: true,
+    debugMode: false,
+    disabledHosts: {}
+  });
+}
+
+export async function writeBurgerSettings(
+  extContext: BrowserContext,
+  extensionId: string,
+  settings: Record<string, unknown>
+) {
   const optionsPage = await extContext.newPage();
   try {
     await optionsPage.goto(`chrome-extension://${extensionId}/src/options/options.html`);
-    await optionsPage.evaluate(() => new Promise<void>(resolve => {
-      chrome.storage.local.set({
-        burgerizeSettings: {
-          globalEnabled: true,
-          countryEnabled: true,
-          currencyEnabled: true,
-          debugMode: false,
-          disabledHosts: {}
-        }
-      }, () => resolve());
-    }));
+    await optionsPage.evaluate((next) => new Promise<void>(resolve => {
+      chrome.storage.local.set({ burgerizeSettings: next }, () => resolve());
+    }), settings);
+  } finally {
+    await optionsPage.close();
+  }
+}
+
+export async function patchBurgerSettings(
+  extContext: BrowserContext,
+  extensionId: string,
+  partial: Record<string, unknown>
+) {
+  const optionsPage = await extContext.newPage();
+  try {
+    await optionsPage.goto(`chrome-extension://${extensionId}/src/options/options.html`);
+    await optionsPage.evaluate((patch) => new Promise<void>(resolve => {
+      chrome.storage.local.get(["burgerizeSettings"], stored => {
+        const next = { ...(stored.burgerizeSettings || {}), ...patch };
+        chrome.storage.local.set({ burgerizeSettings: next }, () => resolve());
+      });
+    }), partial);
   } finally {
     await optionsPage.close();
   }

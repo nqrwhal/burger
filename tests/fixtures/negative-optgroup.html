@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Negative: optgroup country select</title></head>
+  <body>
+    <h1>Country select with &lt;optgroup&gt;</h1>
+    <p>Expected: left alone (Burger skips optgroup selects rather than ungrouping options).</p>
+    <form>
+      <label for="country">Country</label>
+      <select id="country" name="country" autocomplete="country">
+        <option value="">Select country</option>
+        <optgroup label="Americas">
+          <option value="AR">Argentina</option>
+          <option value="BR">Brazil</option>
+          <option value="CA">Canada</option>
+          <option value="MX">Mexico</option>
+          <option value="US">United States</option>
+          <option value="UY">Uruguay</option>
+        </optgroup>
+        <optgroup label="Europe">
+          <option value="DE">Germany</option>
+          <option value="FR">France</option>
+          <option value="GB">United Kingdom</option>
+        </optgroup>
+      </select>
+    </form>
+  </body>
+</html>

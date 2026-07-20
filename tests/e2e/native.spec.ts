@@ -107,3 +107,22 @@ test("positive-select2: backing <select> next to .select2-container is reordered
     6_000
   );
 });
+
+test("positive-duplicate-value: selection stays on the original option element", async ({ page }) => {
+  await page.goto("/positive-duplicate-value.html");
+  await waitForBurger(page);
+  await waitForOrder(page, () => selectLabels(page, "#country"), TOP_US);
+  const selectedId = await page.$eval("#country", el => {
+    const sel = el as HTMLSelectElement;
+    return sel.selectedOptions[0]?.id || "";
+  });
+  expect(selectedId).toBe("canada-primary");
+  expect(await page.$eval("#country", el => (el as HTMLSelectElement).value)).toBe("CA");
+});
+
+test("positive-pushstate: select injected after pushState is reordered", async ({ page }) => {
+  await page.goto("/positive-pushstate.html");
+  await waitForBurger(page);
+  await page.click("#nav");
+  await waitForOrder(page, () => selectLabels(page, "#country"), TOP_US, 4_000);
+});

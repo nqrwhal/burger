@@ -50,6 +50,9 @@ function verifyManifestFilesAreIncluded(manifest) {
   ref(manifest.action?.default_popup);
   ref(manifest.options_ui?.page);
   ref(manifest.options_page);
+  for (const war of manifest.web_accessible_resources || []) {
+    for (const r of war.resources || []) ref(r);
+  }
 
   const missing = [];
   for (const p of referenced) {

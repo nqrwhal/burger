@@ -1,17 +1,16 @@
 // Watches the DOM for new <select> elements and re-runs the scan. Throttled so
-// the extension never causes long tasks, and self-mutations are ignored via a
-// short suppression flag.
+// the extension never causes long tasks.
+//
+// We intentionally do NOT suppress observer callbacks around our own DOM moves.
+// A follow-up scan after reorder hits the adapters' "already-on-top" fast path
+// and does not mutate again, so there is no feedback loop — and suppressing
+// would drop real framework re-renders that happen in the same turn.
 
-// Throttle keeps us off the main thread under heavy churn, but for ARIA
-// menus the perceived lag matters — a 400 ms delay between click-to-open and
-// reorder is visible. 120 ms feels instant while still coalescing bursts.
 const SCAN_INTERVAL_MS = 120;
-const SUPPRESS_MS = 50;
 
 function createManager(onScanRequested) {
   let pending = false;
   let lastScan = 0;
-  let suppressUntil = 0;
 
   function requestScan(reason) {
     if (pending) return;
@@ -21,23 +20,24 @@ function createManager(onScanRequested) {
     setTimeout(() => {
       pending = false;
       lastScan = performance.now();
-      // Suppress observer reactions to our own DOM moves for a moment.
-      suppressUntil = performance.now() + SUPPRESS_MS;
       try { onScanRequested(reason); } catch (e) { console.warn("[us-first] scan failed", e); }
     }, wait);
   }
 
   const observer = new MutationObserver(mutations => {
-    if (performance.now() < suppressUntil) return;
     for (const m of mutations) {
       if (m.type === "childList" && (m.addedNodes.length || m.removedNodes.length)) {
         requestScan("mutation-childlist");
         return;
       }
       if (m.type === "attributes") {
-        // aria-expanded going true means a combobox just opened — that's our
-        // cue to scan for newly visible listboxes.
-        if (m.attributeName === "aria-expanded" || m.attributeName === "aria-hidden") {
+        // Menus often open by flipping aria-expanded / aria-hidden / hidden
+        // without adding nodes (e.g. a pre-mounted portal).
+        if (
+          m.attributeName === "aria-expanded" ||
+          m.attributeName === "aria-hidden" ||
+          m.attributeName === "hidden"
+        ) {
           requestScan("aria-state-change");
           return;
         }
@@ -45,16 +45,30 @@ function createManager(onScanRequested) {
     }
   });
 
+  function injectHistoryHook() {
+    // Page-world patch; content scripts cannot see the page's History methods.
+    try {
+      const s = document.createElement("script");
+      s.src = chrome.runtime.getURL("src/content/history-hook.js");
+      s.async = false;
+      s.onload = () => { try { s.remove(); } catch { /* ignore */ } };
+      const root = document.documentElement || document.head || document.body;
+      if (root) root.appendChild(s);
+    } catch (e) {
+      console.warn("[us-first] history hook inject failed", e);
+    }
+    window.addEventListener("burgerize:navigate", () => requestScan("history"));
+    window.addEventListener("popstate", () => requestScan("popstate"));
+  }
+
   function start() {
     observer.observe(document.documentElement, {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ["aria-expanded", "aria-hidden"]
+      attributeFilter: ["aria-expanded", "aria-hidden", "hidden"]
     });
-    // Also scan on SPA history changes — many frameworks change route without
-    // triggering childList mutations on the root.
-    window.addEventListener("popstate", () => requestScan("popstate"));
+    injectHistoryHook();
     // Initial scan.
     requestScan("initial");
   }

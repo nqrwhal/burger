@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head><meta charset="utf-8"><title>Positive: ARIA listbox re-render</title></head>
+  <body>
+    <h1>ARIA listbox that re-renders option children</h1>
+    <p>Open the listbox, then click Rebuild. Expected: US returns to the top after the framework rewrite.</p>
+    <button id="country-input" aria-haspopup="listbox" aria-expanded="false" aria-controls="country-listbox">
+      Select country
+    </button>
+    <ul id="country-listbox" role="listbox" hidden aria-label="Country"></ul>
+    <button type="button" id="rebuild" hidden>Rebuild options (alpha)</button>
+    <script>
+      const COUNTRIES = [
+        ["AR", "Argentina"], ["AU", "Australia"], ["BR", "Brazil"], ["CA", "Canada"],
+        ["CN", "China"], ["DE", "Germany"], ["FR", "France"], ["GB", "United Kingdom"],
+        ["IN", "India"], ["JP", "Japan"], ["MX", "Mexico"], ["US", "United States"],
+        ["UY", "Uruguay"]
+      ];
+      const trigger = document.getElementById("country-input");
+      const listbox = document.getElementById("country-listbox");
+      const rebuild = document.getElementById("rebuild");
+
+      function fill(order) {
+        listbox.textContent = "";
+        for (const [value, label] of order) {
+          const li = document.createElement("li");
+          li.setAttribute("role", "option");
+          li.dataset.value = value;
+          li.textContent = label;
+          listbox.appendChild(li);
+        }
+      }
+
+      fill(COUNTRIES);
+
+      trigger.addEventListener("click", () => {
+        const open = trigger.getAttribute("aria-expanded") === "true";
+        trigger.setAttribute("aria-expanded", open ? "false" : "true");
+        listbox.hidden = open;
+        rebuild.hidden = open;
+      });
+
+      rebuild.addEventListener("click", () => {
+        // Simulate a framework re-render: same listbox node, fresh option nodes
+        // in original alphabetical order (US at the end again).
+        fill(COUNTRIES);
+      });
+    </script>
+  </body>
+</html>

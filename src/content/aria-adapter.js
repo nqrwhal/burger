@@ -12,6 +12,7 @@
 
 const ARIA_PROCESSED_FLAG = "__burgerAriaProcessed";
 const ARIA_ORDER_ATTR = "data-burger-original-aria-order";
+const ARIA_ORDER_ELS = "__burgerAriaOrderEls";
 
 function normalizeOption(el) {
   const { normalize } = window.__usFirst.usAliases;
@@ -45,30 +46,57 @@ function normalizeOption(el) {
   };
 }
 
+function parentOrHost(node) {
+  if (!node) return null;
+  if (node.parentElement) return node.parentElement;
+  // Cross open shadow roots: ShadowRoot has no parentElement, but .host does.
+  const root = typeof node.getRootNode === "function" ? node.getRootNode() : null;
+  if (root && root !== node && root.host) return root.host;
+  return null;
+}
+
 function isVisible(el) {
   if (!el || !el.getBoundingClientRect) return false;
-  if (el.hidden) return false;
-  if (el.getAttribute("aria-hidden") === "true") return false;
-  // Inline style fast-path.
-  const inline = el.style;
-  if (inline && (inline.display === "none" || inline.visibility === "hidden")) return false;
-  // Computed-style check. We deliberately do NOT reject on rect.width/height
-  // being 0 — absolutely positioned listboxes (Headless UI, MUI portal,
-  // React Select) can briefly measure 0x0 before their popper script lays
-  // them out, even though they're logically "open". Computed display/
-  // visibility is a more reliable signal.
-  const view = el.ownerDocument && el.ownerDocument.defaultView;
-  if (view) {
-    const cs = view.getComputedStyle(el);
-    if (cs.display === "none" || cs.visibility === "hidden") return false;
+  // Walk self + ancestors (including shadow hosts). A listbox inside a
+  // [hidden] / display:none popover must not count as open even when its own
+  // computed style is still "visible".
+  //
+  // We deliberately do NOT reject on rect.width/height being 0 — absolutely
+  // positioned listboxes (Headless UI, MUI portal, React Select) can briefly
+  // measure 0x0 before their popper script lays them out, even though they're
+  // logically "open". Computed display/visibility is a more reliable signal.
+  let node = el;
+  while (node && node.nodeType === 1) {
+    if (node.hidden) return false;
+    if (node.getAttribute("aria-hidden") === "true") return false;
+    const inline = node.style;
+    if (inline && (inline.display === "none" || inline.visibility === "hidden")) return false;
+    const view = node.ownerDocument && node.ownerDocument.defaultView;
+    if (view) {
+      const cs = view.getComputedStyle(node);
+      if (cs.display === "none" || cs.visibility === "hidden") return false;
+    }
+    if (node === node.ownerDocument.documentElement) break;
+    node = parentOrHost(node);
   }
   return true;
 }
 
 function looksVirtualized(optionEls) {
-  for (let i = 0; i < Math.min(optionEls.length, 5); i++) {
+  // Any windowed option is enough — some virtualizers only stamp
+  // aria-posinset/setsize on options after the first paint chunk.
+  for (let i = 0; i < optionEls.length; i++) {
     if (optionEls[i].hasAttribute("aria-posinset")) return true;
     if (optionEls[i].hasAttribute("aria-setsize")) return true;
+  }
+  return false;
+}
+
+function controlsOrOwns(el, id) {
+  for (const attr of ["aria-controls", "aria-owns"]) {
+    const raw = el.getAttribute(attr);
+    if (!raw) continue;
+    if (raw.split(/\s+/).includes(id)) return true;
   }
   return false;
 }
@@ -76,18 +104,15 @@ function looksVirtualized(optionEls) {
 // Some combobox patterns put the input *inside* the same wrapper as the
 // listbox; others link them via aria-controls. Given a listbox, try to find
 // the controlling combobox so we can read its attrs + check filter state.
+// Search light + open shadow DOM — document.querySelector alone misses
+// comboboxes inside shadow roots.
 function findControllingCombobox(listbox) {
   if (!listbox.id) return null;
-  // 1. aria-controls=<listboxId>
-  const byControls = listbox.ownerDocument.querySelector(
-    `[role="combobox"][aria-controls~="${CSS.escape(listbox.id)}"]`
-  );
-  if (byControls) return byControls;
-  // 2. aria-owns=<listboxId>
-  const byOwns = listbox.ownerDocument.querySelector(
-    `[role="combobox"][aria-owns~="${CSS.escape(listbox.id)}"]`
-  );
-  if (byOwns) return byOwns;
+  const { queryAllDeep } = window.__usFirst.domWalk;
+  const id = listbox.id;
+  for (const el of queryAllDeep(listbox.ownerDocument, '[role="combobox"]')) {
+    if (controlsOrOwns(el, id)) return el;
+  }
   return null;
 }
 
@@ -142,7 +167,12 @@ function reorderAriaListbox(listbox, scoreResult) {
     return { changed: false, reason: "already-on-top" };
   }
 
-  // Save snapshot once (by id or text) for rollback.
+  // Save original order once. Prefer live element identity (handles duplicate
+  // labels/ids); also keep a text snapshot as a best-effort fallback if nodes
+  // are replaced before restore.
+  if (!listbox[ARIA_ORDER_ELS]) {
+    listbox[ARIA_ORDER_ELS] = optionEls.slice();
+  }
   if (!listbox.getAttribute(ARIA_ORDER_ATTR)) {
     try {
       const snapshot = optionEls.map(o => ({
@@ -150,7 +180,7 @@ function reorderAriaListbox(listbox, scoreResult) {
         t: (o.textContent || "").trim()
       }));
       listbox.setAttribute(ARIA_ORDER_ATTR, JSON.stringify(snapshot));
-    } catch { /* huge list — skip rollback support */ }
+    } catch { /* huge list — skip attr rollback support */ }
   }
 
   // Move the target before the option at insertIndex (within the listbox's
@@ -168,11 +198,22 @@ function reorderAriaListbox(listbox, scoreResult) {
 }
 
 function restoreAriaListbox(listbox) {
+  const live = listbox[ARIA_ORDER_ELS];
+  if (live && live.length) {
+    for (const el of live) {
+      if (el && el.parentNode) el.parentNode.appendChild(el);
+    }
+    listbox[ARIA_ORDER_ELS] = null;
+    listbox.removeAttribute(ARIA_ORDER_ATTR);
+    listbox[ARIA_PROCESSED_FLAG] = false;
+    return true;
+  }
+
   const raw = listbox.getAttribute(ARIA_ORDER_ATTR);
   if (!raw) return false;
   let snapshot;
   try { snapshot = JSON.parse(raw); } catch { return false; }
-  // Re-collect current options and reorder them in the same parent.
+  // Fallback: re-collect by id|text (ambiguous when duplicates exist).
   const opts = Array.from(listbox.querySelectorAll('[role="option"]'));
   const byKey = new Map();
   for (const o of opts) {

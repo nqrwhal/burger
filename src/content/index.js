@@ -22,12 +22,12 @@
   let debugMode = false;
 
   // Track which selectors we've already scored (one-shot) and which we've
-  // actually modified (so "restore" can find them). Two collections because
-  // native selects use WeakSet keyed by element; modified is iterated.
+  // actually modified (so "restore" can find them). modified* maps element →
+  // kind so kind-toggle can restore without re-scoring a closed/empty menu.
   const seenNative = new WeakSet();
-  const modifiedNative = new Set();
+  const modifiedNative = new Map();
   const seenAria = new WeakSet();
-  const modifiedAria = new Set();
+  const modifiedAria = new Map();
 
   function shouldActOn(kind) {
     if (kind === "country") return kindsEnabled.country;
@@ -42,32 +42,42 @@
     for (const sel of selects) {
       try {
         if (seenNative.has(sel)) {
+          // Re-apply if we previously reordered (framework may rewrite options).
+          // If we only saw it before (or restored after disable), re-score —
+          // restore clears PROCESSED_FLAG but used to leave seenNative set,
+          // which permanently skipped the control.
           if (nativeSelect.isProcessed(sel)) reapplyNativeIfNeeded(sel);
+          else scoreAndMaybeReorderNative(sel);
           continue;
         }
         seenNative.add(sel);
-        const result = detector.scoreSelector(sel);
-        if (debugMode) {
-          console.log("[burger] native:", sel.name || sel.id || "(anon)", "→", result.kind, "score", result.score, result.reasons);
-          debugOverlay.annotate(sel, result);
-        }
-        if (result.kind === "none") continue;
-        if (!shouldActOn(result.kind)) continue;
-        if (result.score < detector.ACT_THRESHOLD) continue;
-
-        const r = nativeSelect.reorderNativeSelect(sel, result);
-        if (r.changed) modifiedNative.add(sel);
+        scoreAndMaybeReorderNative(sel);
       } catch (e) {
         console.warn("[burger] native scan threw on element:", sel, e);
       }
     }
   }
 
+  function scoreAndMaybeReorderNative(sel) {
+    const result = detector.scoreSelector(sel);
+    if (debugMode) {
+      console.log("[burger] native:", sel.name || sel.id || "(anon)", "→", result.kind, "score", result.score, result.reasons);
+      debugOverlay.annotate(sel, result);
+    }
+    if (result.kind === "none") return;
+    if (!shouldActOn(result.kind)) return;
+    if (result.score < detector.ACT_THRESHOLD) return;
+
+    const r = nativeSelect.reorderNativeSelect(sel, result);
+    if (r.changed) modifiedNative.set(sel, result.kind);
+  }
+
   function reapplyNativeIfNeeded(sel) {
     const result = detector.scoreSelector(sel);
     if (!shouldActOn(result.kind)) return;
     if (result.score >= detector.ACT_THRESHOLD && result.targetOption) {
-      nativeSelect.reorderNativeSelect(sel, result);
+      const r = nativeSelect.reorderNativeSelect(sel, result);
+      if (r.changed) modifiedNative.set(sel, result.kind);
     }
   }
 
@@ -78,23 +88,42 @@
     if (debugMode) console.log("[burger] aria: found", listboxes.length, "open listbox(es)");
     for (const lb of listboxes) {
       try {
-        if (ariaAdapter.isProcessed(lb)) continue;
-        seenAria.add(lb);
-        const result = ariaAdapter.scoreAriaListbox(lb);
-        if (debugMode) {
-          console.log("[burger] aria:", lb.id || lb.getAttribute("aria-label") || "(anon)", "→", result.kind, "score", result.score, result.reasons);
-          debugOverlay.annotate(lb, result);
+        // Reapply on re-render: frameworks often keep the listbox node and
+        // replace its option children, which would otherwise leave us stuck
+        // on the one-shot processed flag with the original order restored.
+        if (ariaAdapter.isProcessed(lb)) {
+          reapplyAriaIfNeeded(lb);
+          continue;
         }
-        if (result.kind === "none") continue;
-        if (!shouldActOn(result.kind)) continue;
-        if (result.score < detector.ACT_THRESHOLD) continue;
-
-        const r = ariaAdapter.reorderAriaListbox(lb, result);
-        if (r.changed) modifiedAria.add(lb);
+        seenAria.add(lb);
+        scoreAndMaybeReorderAria(lb);
       } catch (e) {
         console.warn("[burger] aria scan threw on element:", lb, e);
       }
     }
+  }
+
+  function scoreAndMaybeReorderAria(lb) {
+    const result = ariaAdapter.scoreAriaListbox(lb);
+    if (debugMode) {
+      console.log("[burger] aria:", lb.id || lb.getAttribute("aria-label") || "(anon)", "→", result.kind, "score", result.score, result.reasons);
+      debugOverlay.annotate(lb, result);
+    }
+    if (result.kind === "none") return;
+    if (!shouldActOn(result.kind)) return;
+    if (result.score < detector.ACT_THRESHOLD) return;
+
+    const r = ariaAdapter.reorderAriaListbox(lb, result);
+    if (r.changed) modifiedAria.set(lb, result.kind);
+  }
+
+  function reapplyAriaIfNeeded(lb) {
+    const result = ariaAdapter.scoreAriaListbox(lb);
+    if (result.kind === "none") return;
+    if (!shouldActOn(result.kind)) return;
+    if (result.score < detector.ACT_THRESHOLD) return;
+    const r = ariaAdapter.reorderAriaListbox(lb, result);
+    if (r.changed) modifiedAria.set(lb, result.kind);
   }
 
   // Annotate wrappers (Select2, Choices.js, Tom Select) in debug overlay so
@@ -130,11 +159,54 @@
     if (debugMode) console.log("[burger-perf] scan-ms=" + (performance.now() - t0).toFixed(3));
   }
 
+  function forgetNative(sel) {
+    modifiedNative.delete(sel);
+    seenNative.delete(sel);
+  }
+
+  function forgetAria(lb) {
+    modifiedAria.delete(lb);
+    seenAria.delete(lb);
+  }
+
   function restoreAll() {
-    for (const sel of modifiedNative) nativeSelect.restoreOriginalOrder(sel);
-    modifiedNative.clear();
-    for (const lb of modifiedAria) ariaAdapter.restoreAriaListbox(lb);
-    modifiedAria.clear();
+    for (const sel of [...modifiedNative.keys()]) {
+      nativeSelect.restoreOriginalOrder(sel);
+      forgetNative(sel);
+    }
+    for (const lb of [...modifiedAria.keys()]) {
+      ariaAdapter.restoreAriaListbox(lb);
+      forgetAria(lb);
+    }
+    if (antdAdapter && antdAdapter.restoreSynthesizedRoles) {
+      try { antdAdapter.restoreSynthesizedRoles(document); }
+      catch (e) { console.warn("[burger] antdAdapter.restoreSynthesizedRoles failed:", e); }
+    }
+  }
+
+  // When country/currency is toggled off, restore controls of that kind while
+  // leaving the other kind alone.
+  function restoreDisabledKinds() {
+    for (const [sel, kind] of [...modifiedNative]) {
+      try {
+        if (!shouldActOn(kind)) {
+          nativeSelect.restoreOriginalOrder(sel);
+          forgetNative(sel);
+        }
+      } catch (e) {
+        console.warn("[burger] restoreDisabledKinds native failed:", sel, e);
+      }
+    }
+    for (const [lb, kind] of [...modifiedAria]) {
+      try {
+        if (!shouldActOn(kind)) {
+          ariaAdapter.restoreAriaListbox(lb);
+          forgetAria(lb);
+        }
+      } catch (e) {
+        console.warn("[burger] restoreDisabledKinds aria failed:", lb, e);
+      }
+    }
   }
 
   function siteKey() {
@@ -159,6 +231,7 @@
       if (area !== "local" || !changes.burgerizeSettings) return;
       await refreshSettings();
       if (enabled) {
+        restoreDisabledKinds();
         mgr.requestScan("settings-changed");
       } else {
         restoreAll();

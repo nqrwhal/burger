@@ -70,3 +70,29 @@ test("positive-antd: Ant Design dropdown is synth-roled and reordered on open", 
   // Antd adapter synthesizes role=listbox on .ant-select-dropdown.
   await waitForOrder(page, () => listboxLabels(page, "#antd-dropdown"), TOP_US);
 });
+
+test("positive-mui-select: closed portal listbox is not reordered before open", async ({ page }) => {
+  await page.goto("/positive-mui-select.html");
+  await waitForBurger(page);
+  await page.waitForTimeout(500);
+  const labels = await listboxLabels(page, "#mui-listbox");
+  expect(labels[0]).toBe("Argentina");
+  expect(labels[labels.length - 1]).toBe("Uruguay");
+});
+
+test("positive-aria-rerender: reorders again after same-listbox child rewrite", async ({ page }) => {
+  await page.goto("/positive-aria-rerender.html");
+  await waitForBurger(page);
+  await open(page, "#country-input");
+  await waitForOrder(page, () => listboxLabels(page, "#country-listbox"), TOP_US);
+  await page.click("#rebuild");
+  // Mutation observer is throttled at 120ms; give it a beat after the rewrite.
+  await waitForOrder(page, () => listboxLabels(page, "#country-listbox"), TOP_US, 4_000);
+});
+
+test("positive-aria-hidden-open: reorders when listbox opens via hidden attr", async ({ page }) => {
+  await page.goto("/positive-aria-hidden-open.html");
+  await waitForBurger(page);
+  await page.click("#open-btn");
+  await waitForOrder(page, () => listboxLabels(page, "#hidden-listbox"), TOP_US);
+});
